@@ -1,0 +1,22 @@
+/*
+ * flashingService_cfg.h
+ *
+ *  Created on: Jul 18, 2019
+ *      Author: ion
+ */
+
+#ifndef BLE_FLASHINGPROFILE_FLASHINGPROFILE_CFG_H_
+#define BLE_FLASHINGPROFILE_FLASHINGPROFILE_CFG_H_
+
+//#define FLASHING_PROFILE 1u
+//#define FLASHING_SERVICE_UUID 0x0001
+//#define FLASHING_NUM_HANDLES 5u
+//
+//
+//#define FLASHING_CHR_UUID_1 0x0001
+//#define FLASHING_DESC_UUID_1 0x0001
+
+#define FLASHDEVICE_NAME "FLASHDEVICE"
+
+
+#endif /* BLE_FLASHINGPROFILE_FLASHINGPROFILE_CFG_H_ */

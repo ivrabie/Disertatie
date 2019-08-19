@@ -1,0 +1,15 @@
+idf_component_register(SRCS "gateway_main.cpp" 
+#							"../wifi/wifi_usr" 
+#							"../nvs_adapter/nvs_adapter.c" 
+#							"../ble/ble.c" 
+#							"../ble/flashingProfile/flashingProfile.c" 
+#							"../ble/advertising/advertising.c" 
+#							"../SWL_Gateway/SWL_Gateway.c"
+#                    INCLUDE_DIRS "../wifi/" 
+#                    "../nvs_adapter/" 
+#                    "../ble/" 
+#                    "../ble/flashingProfile/"
+#					"../ble/advertising/" 
+#					"../SWL_Gateway/"
+)
+component_compile_options(-std=c++17)

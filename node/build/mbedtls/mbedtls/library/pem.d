@@ -1,0 +1,66 @@
+mbedtls/library/pem.o: \
+ /home/ion/esp/esp-idf/components/mbedtls/mbedtls/library/pem.c \
+ /home/ion/esp/esp-idf/components/mbedtls/port/include/mbedtls/esp_config.h \
+ /home/ion/esp/node/build/include/sdkconfig.h \
+ /home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/config.h \
+ /home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/check_config.h \
+ /home/ion/esp/esp-idf/components/mbedtls/port/include/esp_mem.h \
+ /home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/check_config.h \
+ /home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/pem.h \
+ /home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/base64.h \
+ /home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/des.h \
+ /home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/aes.h \
+ /home/ion/esp/esp-idf/components/mbedtls/port/include/aes_alt.h \
+ /home/ion/esp/esp-idf/components/mbedtls/port/include/esp32/aes.h \
+ /home/ion/esp/esp-idf/components/esp_common/include/esp_types.h \
+ /home/ion/esp/esp-idf/components/esp_rom/include/esp32/rom/aes.h \
+ /home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/md5.h \
+ /home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/cipher.h \
+ /home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/platform_util.h \
+ /home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/platform_util.h \
+ /home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/platform.h \
+ /home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/platform_time.h \
+ /home/ion/esp/esp-idf/components/newlib/platform_include/time.h
+
+/home/ion/esp/esp-idf/components/mbedtls/port/include/mbedtls/esp_config.h:
+
+/home/ion/esp/node/build/include/sdkconfig.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/config.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/check_config.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/port/include/esp_mem.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/check_config.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/pem.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/base64.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/des.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/aes.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/port/include/aes_alt.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/port/include/esp32/aes.h:
+
+/home/ion/esp/esp-idf/components/esp_common/include/esp_types.h:
+
+/home/ion/esp/esp-idf/components/esp_rom/include/esp32/rom/aes.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/md5.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/cipher.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/platform_util.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/platform_util.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/platform.h:
+
+/home/ion/esp/esp-idf/components/mbedtls/mbedtls/include/mbedtls/platform_time.h:
+
+/home/ion/esp/esp-idf/components/newlib/platform_include/time.h:
+/home/ion/esp/esp-idf/components/mbedtls/mbedtls/library/pem.c:

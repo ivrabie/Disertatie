@@ -1,0 +1,38 @@
+random.o: /home/ion/esp/esp-idf/components/newlib/random.c \
+ /home/ion/esp/esp-idf/components/newlib/platform_include/sys/random.h \
+ /home/ion/esp/esp-idf/components/newlib/platform_include/assert.h \
+ /home/ion/esp/node/build/include/sdkconfig.h \
+ /home/ion/esp/esp-idf/components/newlib/platform_include/errno.h \
+ /home/ion/esp/esp-idf/components/esp_common/include/esp_system.h \
+ /home/ion/esp/esp-idf/components/esp_common/include/esp_err.h \
+ /home/ion/esp/esp-idf/components/esp32/include/esp_attr.h \
+ /home/ion/esp/esp-idf/components/esp_common/include/esp_bit_defs.h \
+ /home/ion/esp/esp-idf/components/esp_common/include/esp_idf_version.h \
+ /home/ion/esp/esp-idf/components/log/include/esp_log.h \
+ /home/ion/esp/esp-idf/components/esp_rom/include/esp32/rom/ets_sys.h \
+ /home/ion/esp/esp-idf/components/log/include/esp_log_internal.h
+
+/home/ion/esp/esp-idf/components/newlib/platform_include/sys/random.h:
+
+/home/ion/esp/esp-idf/components/newlib/platform_include/assert.h:
+
+/home/ion/esp/node/build/include/sdkconfig.h:
+
+/home/ion/esp/esp-idf/components/newlib/platform_include/errno.h:
+
+/home/ion/esp/esp-idf/components/esp_common/include/esp_system.h:
+
+/home/ion/esp/esp-idf/components/esp_common/include/esp_err.h:
+
+/home/ion/esp/esp-idf/components/esp32/include/esp_attr.h:
+
+/home/ion/esp/esp-idf/components/esp_common/include/esp_bit_defs.h:
+
+/home/ion/esp/esp-idf/components/esp_common/include/esp_idf_version.h:
+
+/home/ion/esp/esp-idf/components/log/include/esp_log.h:
+
+/home/ion/esp/esp-idf/components/esp_rom/include/esp32/rom/ets_sys.h:
+
+/home/ion/esp/esp-idf/components/log/include/esp_log_internal.h:
+/home/ion/esp/esp-idf/components/newlib/./random.c:
