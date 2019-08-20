@@ -24,7 +24,8 @@ using namespace WIFI_ADAPTER;
 
 int WifiAdapter::s_retry_num = 0;
 EventGroupHandle_t WifiAdapter::s_wifi_event_group;
-
+WifiAdapter WifiAdapter::wifiAdapter;
+WIFI_STATE_TYPE WifiAdapter::state;
 WifiAdapter::WifiAdapter()
 {
 
@@ -35,24 +36,40 @@ WifiAdapter::~WifiAdapter()
 
 }
 
+
+WifiAdapter * WifiAdapter::getInstance()
+{
+	return &WifiAdapter::wifiAdapter;
+}
 void WifiAdapter::Init(void)
 {
-	wifi_init_config_t WIFI_config = WIFI_INIT_CONFIG_DEFAULT();
 
-	WifiAdapter::s_wifi_event_group = xEventGroupCreate();
+	if(WifiAdapter::state == WIFI_STATE_NOT_INIT)
+	{
+		WifiAdapter::s_wifi_event_group = xEventGroupCreate();
+
+		wifi_init_config_t WIFI_config = WIFI_INIT_CONFIG_DEFAULT();
 
 
-	tcpip_adapter_init();
 
 
-	ESP_ERROR_CHECK(esp_event_loop_create_default());
+		tcpip_adapter_init();
 
-	ESP_ERROR_CHECK(esp_wifi_init(&WIFI_config));
 
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID,    WifiAdapter::event_handler, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT,   IP_EVENT_STA_GOT_IP, WifiAdapter::event_handler, NULL));
+		ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODULE_MODE));
+		ESP_ERROR_CHECK(esp_wifi_init(&WIFI_config));
+
+		ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID,    WifiAdapter::event_handler, NULL));
+		ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT,   IP_EVENT_STA_GOT_IP, WifiAdapter::event_handler, NULL));
+
+		ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODULE_MODE));
+
+		WifiAdapter::state = WIFI_STATE_INIT;
+	}
+
+
+
 }
 
 void  WifiAdapter::event_handler(void* arg, esp_event_base_t event_base,
@@ -60,12 +77,19 @@ void  WifiAdapter::event_handler(void* arg, esp_event_base_t event_base,
 {
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         esp_wifi_connect();
+        WifiAdapter::state =  WIFI_STATE_START;
+        ESP_LOGI(WIFI_MODULE_NAME, "Wifi started");
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
         if (WifiAdapter::s_retry_num < EXAMPLE_ESP_MAXIMUM_RETRY) {
             esp_wifi_connect();
             xEventGroupClearBits(WifiAdapter::s_wifi_event_group, WifiAdapter::WIFI_CONNECTED_BIT);
             WifiAdapter::s_retry_num++;
             ESP_LOGI(WIFI_MODULE_NAME, "retry to connect to the AP");
+
+        }
+        else
+        {
+        	WifiAdapter::state =  WIFI_STATE_INIT;
         }
         ESP_LOGI(WIFI_MODULE_NAME,"connect to the AP fail");
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
@@ -74,22 +98,38 @@ void  WifiAdapter::event_handler(void* arg, esp_event_base_t event_base,
                  ip4addr_ntoa(&event->ip_info.ip));
         WifiAdapter::s_retry_num = 0;
         xEventGroupSetBits(WifiAdapter::s_wifi_event_group, WifiAdapter::WIFI_CONNECTED_BIT);
+        WifiAdapter::state =  WIFI_STATE_CONNECTED;
+
     }
 }
 void  WifiAdapter::Connect(void)
 {
-	wifi_config_t wifi_config;
+	if(WifiAdapter::state ==  WIFI_STATE_NOT_INIT)
+	{
+		return;
+	}
+	else if(WifiAdapter::state ==  WIFI_STATE_START)
+	{
+		return;
+	}
+	else if(WifiAdapter::state ==  WIFI_STATE_CONNECTED)
+	{
+		return;
+	}
+	else
+	{
+		memcpy(this->wifi_config.sta.ssid,WIFI_MODULE_SSID,sizeof(WIFI_MODULE_SSID));
+		memcpy(this->wifi_config.sta.password,WIFI_MODULE_PASS,sizeof(WIFI_MODULE_PASS));
+
+		ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
+		ESP_ERROR_CHECK(esp_wifi_start());
 
 
-	memcpy(wifi_config.sta.ssid,WIFI_MODULE_SSID,sizeof(WIFI_MODULE_SSID));
-	memcpy(wifi_config.sta.password,WIFI_MODULE_PASS,sizeof(WIFI_MODULE_PASS));
+		ESP_LOGI(WIFI_MODULE_NAME, "wifi_init_sta finished.");
+		ESP_LOGI(WIFI_MODULE_NAME, "connect to app SSID:%s password:%s",this->wifi_config.sta.ssid, this->wifi_config.sta.password);
 
-	ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
-	ESP_ERROR_CHECK(esp_wifi_start());
+	}
 
-
-	ESP_LOGI(WIFI_MODULE_NAME, "wifi_init_sta finished.");
-	ESP_LOGI(WIFI_MODULE_NAME, "connect to app SSID:%s password:%s",wifi_config.sta.ssid, wifi_config.sta.password);
 }
 
 

@@ -69,15 +69,15 @@ void SwlGateway::Init(void)
 	uint8_t manufacture_data[MANUFACTURE_DATA_SIZE];
 	uint8_t len;
 	this->nvsAdapter->Init();
-	this->wifiAdapter->Init();
-	this->wifiAdapter->Connect();
+
 	this->gapAdapter->Init();
 	this->gattc->Init();
 	this->gattc->RegisterApp(this->appId); // @suppress("Invalid arguments")
-//	this->buildManufactureDataBuffer(manufacture_data,len);
-//	this->gapAdapter->SetDeviceName((uint8_t*)SWLGW_NAME,sizeof(SWLGW_NAME));
-//	this->gapAdapter->StartAdvertising(manufacture_data,len);
-
+	this->buildManufactureDataBuffer(manufacture_data,len);
+	this->gapAdapter->SetDeviceName((uint8_t*)SWLGW_NAME,sizeof(SWLGW_NAME));
+	this->gapAdapter->StartAdvertising(manufacture_data,len);
+	this->wifiAdapter->Init();
+	this->wifiAdapter->Connect();
 	this->gapAdapter->StartScan(5u);
 
 }
@@ -337,26 +337,26 @@ void SwlGateway::updateGatts(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if,
 void SwlGateway::processScanData(esp_ble_gap_cb_param_t *param)
 {
 	uint8_t i = 0;
-	ESP_LOGI(GAP_NAME, "Scan event: %d \n"
-			"Device type %d\n"
-			"Ble event type %d\n"
-			"Ble addr type %d\n"
-			"Rssi: %d\n"
-			"Adv len: %d\n"
-			"Resp len: %d\n"
-			"Packet discarded: %d\n"
-			"Scan result: %d\n,"
-			"Flags: %d\n", param->scan_rst.search_evt,param->scan_rst.dev_type,
-			param->scan_rst.ble_evt_type,param->scan_rst.ble_addr_type,param->scan_rst.rssi,
-			param->scan_rst.adv_data_len,param->scan_rst.scan_rsp_len,param->scan_rst.num_dis,
-			param->scan_rst.num_resps, param->scan_rst.flag);
-	esp_log_buffer_hex(GAP_NAME, param->scan_rst.bda, 6);
+//	ESP_LOGI(GAP_NAME, "Scan event: %d \n"
+//			"Device type %d\n"
+//			"Ble event type %d\n"
+//			"Ble addr type %d\n"
+//			"Rssi: %d\n"
+//			"Adv len: %d\n"
+//			"Resp len: %d\n"
+//			"Packet discarded: %d\n"
+//			"Scan result: %d\n,"
+//			"Flags: %d\n", param->scan_rst.search_evt,param->scan_rst.dev_type,
+//			param->scan_rst.ble_evt_type,param->scan_rst.ble_addr_type,param->scan_rst.rssi,
+//			param->scan_rst.adv_data_len,param->scan_rst.scan_rsp_len,param->scan_rst.num_dis,
+//			param->scan_rst.num_resps, param->scan_rst.flag);
+//	esp_log_buffer_hex(GAP_NAME, param->scan_rst.bda, 6);
 
 
 
 		if (param->scan_rst.adv_data_len > 0) {
-			ESP_LOGI(GAP_NAME, "adv data:");
-			esp_log_buffer_hex(GAP_NAME, &param->scan_rst.ble_adv[0], param->scan_rst.adv_data_len);
+//			ESP_LOGI(GAP_NAME, "adv data:");
+//			esp_log_buffer_hex(GAP_NAME, &param->scan_rst.ble_adv[0], param->scan_rst.adv_data_len);
 			FlashDevice device;
 			this->processRawData(&param->scan_rst.ble_adv[0],param->scan_rst.adv_data_len,&device);
 

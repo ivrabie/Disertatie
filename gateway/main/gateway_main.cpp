@@ -22,8 +22,10 @@
 #include "GapAdapter.h"
 #include "SWL_Gateway.h"
 #include "../etl/vector.h"
+#include "../HttpClient/HttpClient.h"
 using namespace NVS_ADAPTER;
 using namespace WIFI_ADAPTER;
+using namespace HTTP_CLIENT;
 #define TASK_CYCLE_10ms 10u
 
 #define TASK_PRIO 5u
@@ -40,11 +42,12 @@ using namespace WIFI_ADAPTER;
 
 // Init global classes
 NVSAdapter nvs;
-WifiAdapter wifi;
+WifiAdapter *wifi = WifiAdapter::getInstance();
+HttpClient *httpClient = HttpClient::getInstance();
 BLE::BleAdapter bleAdap;
 BLE::GapAdapter gapAdap(&bleAdap);
 BLE::GattClient gattc(&bleAdap);
-SWL_GATEWAY::SwlGateway swlApp(SWL_APP,&gapAdap,&gattc,&nvs,&wifi); // @suppress("Abstract class cannot be instantiated")
+SWL_GATEWAY::SwlGateway swlApp(SWL_APP,&gapAdap,&gattc,&nvs,wifi); // @suppress("Abstract class cannot be instantiated")
 // Function that implements the task being created.
 extern "C" void vTaskCode_10ms( void * pvParameters )
 {
@@ -58,6 +61,7 @@ extern "C" void vTaskCode_10ms( void * pvParameters )
     	vTaskDelayUntil(&xLastWakeTime, TASK_CYCLE_10ms/portTICK_PERIOD_MS );
 
     	free_heap = esp_get_free_heap_size();
+    	httpClient->PerformRequest();
     	if(free_heap <1024)
     	{
     		ESP_LOGI("main","low memory %d", free_heap);

@@ -20,19 +20,35 @@
 
 namespace WIFI_ADAPTER
 {
+enum WIFI_STATE_TYPE
+{
+	WIFI_STATE_NOT_INIT,
+	WIFI_STATE_INIT,
+	WIFI_STATE_START,
+	WIFI_STATE_CONNECTED
+};
 	class WifiAdapter
 	{
+
+	private:
+
+		WifiAdapter();
+		static WifiAdapter wifiAdapter;
 	public:
+		static WIFI_STATE_TYPE state;
 		static int s_retry_num;
 		static const int WIFI_CONNECTED_BIT = BIT0;
 		static EventGroupHandle_t s_wifi_event_group;
-
+		static WifiAdapter * getInstance();
 
 	public:
-		WifiAdapter();
+
+
+		wifi_config_t wifi_config;
+
 		~WifiAdapter();
 
-		 void Init(void);
+		void Init(void);
 		 void Connect(void);
 		 static void event_handler(void* arg, esp_event_base_t event_base,int32_t event_id, void* event_data);
 
