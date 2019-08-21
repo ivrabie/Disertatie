@@ -1,5 +1,5 @@
 /*
- * advertising.h
+ * 
  *
  *  Created on: Jul 19, 2019
  *      Author: ion
