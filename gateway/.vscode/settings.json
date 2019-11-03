@@ -1,8 +1,12 @@
 {
     "files.associations": {
         "stdio.h": "c",
-        "esp_spi_flash.h": "c"
+        "esp_spi_flash.h": "c",
+        "*.inc": "cpp",
+        "*.ipp": "cpp",
+        "btc_manage.h": "c",
+        "l2cdefs.h": "c"
     },
-    "C_Cpp.errorSquiggles": "Enabled",
+    //"C_Cpp.errorSquiggles": "Disabled",
     //"terminal.integrated.shell.windows":"C:\\WINDOWS\\System32\\cmd.exe"
 }

@@ -62,7 +62,7 @@ SOFTWARE.
 #include "message_router.h"
 #include "integral_limits.h"
 #include "largest.h"
-
+#include "esp_log.h"
 #undef ETL_FILE
 #define ETL_FILE "34"
 
@@ -70,6 +70,7 @@ SOFTWARE.
 
 namespace etl
 {
+#define FSM "FSM" 
   class fsm;
 
   /// Allow alternative type for state id.
@@ -215,7 +216,15 @@ namespace etl
         p_state(nullptr)
     {
     }
+    fsm(const etl::fsm &f):etl::imessage_router(f)
+    {
 
+    }
+    fsm& operator=(const etl::fsm &f)
+    {
+      imessage_router::operator=(f);
+      return (*this);
+    }
     //*******************************************
     /// Set the states for the FSM
     //*******************************************
@@ -291,7 +300,6 @@ namespace etl
     {
         etl::fsm_state_id_t next_state_id = p_state->process_event(source, message);
         ETL_ASSERT(next_state_id < number_of_states, ETL_ERROR(etl::fsm_state_id_exception));
-
         etl::ifsm_state* p_next_state = state_list[next_state_id];
 
         // Have we changed state?
@@ -301,10 +309,8 @@ namespace etl
           {
             p_state->on_exit_state();
             p_state = p_next_state;
-
             next_state_id = p_state->on_enter_state();
             ETL_ASSERT(next_state_id < number_of_states, ETL_ERROR(etl::fsm_state_id_exception));
-
             p_next_state = state_list[next_state_id];
 
           } while (p_next_state != p_state); // Have we changed state again?

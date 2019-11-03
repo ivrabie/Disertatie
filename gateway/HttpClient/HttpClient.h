@@ -10,26 +10,33 @@
 #include "../wifi/WifiAdapter.h"
 #include <esp_http_client.h>
 #include <esp_tls.h>
+#include "../etl/observer.h"
 using namespace WIFI_ADAPTER;
+using namespace etl;
+extern etl::ifunction<esp_http_client_event_t *>* http_event_callback;
 namespace HTTP_CLIENT
 {
 
 #define HTTP_CLIENT_TAG "HttpClient"
-	class HttpClient
+#define HTTP_MAX_OBSERVERS UINT8_C(2u)
+typedef etl::observer<esp_http_client_event_t *> Http_Observer;
+	class HttpClient:public etl::observable<Http_Observer, HTTP_MAX_OBSERVERS>
 	{
 	private:
-		static esp_err_t httpEventHandler(esp_http_client_event_t *evt);
-		static HttpClient httpClient;
+		
 		esp_http_client_config_t httpClientConfig;
-		WifiAdapter *wifiAdapter;
+		WifiAdapter &wifiAdapter = WifiAdapter::getInstance();
+		esp_http_client_handle_t clientHandle;
+		
 		HttpClient();
 		~HttpClient();
-		esp_http_client_handle_t clientHandle;
-
 	public:
-		static HttpClient* getInstance(void);
 
-		void PerformRequest(void);
+		static HttpClient http;
+		void PerformRequest(const char *url);
+		void RequestStreamData(void);
+		void httpEventHandler(esp_http_client_event_t *evt);
+		static HttpClient& getInstance(void);
 
 	};
 

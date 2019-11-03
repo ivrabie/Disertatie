@@ -26,5 +26,5 @@
 #define ETL_NO_NULLPTR_SUPPORT 0
 #define ETL_NO_LARGE_CHAR_SUPPORT 0
 #define ETL_CPP11_TYPE_TRAITS_IS_TRIVIAL_SUPPORTED 0
-#define ETL_NO_STL
+#define ETL_NO_STL #error Must provide a profile header file when buiding ETL.
 #endif /* MAIN_CUSTOM_PROFILE_H_ */

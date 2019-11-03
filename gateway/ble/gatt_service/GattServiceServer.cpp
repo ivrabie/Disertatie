@@ -25,36 +25,26 @@ GattServiceServer::~GattServiceServer()
 }
 void GattServiceServer::CreateService(void)
 {
-	esp_err_t ret;
 	uint8_t i = 0;
 	uint8_t j = 0;
 	for(i = 0; i < this->noOfRegistredChrs; i++)
 	{
-		ret = esp_ble_gatts_add_char(this->serviceHandle,
+		this->gatts.AddChar(this->serviceHandle,
 				&this->listOfChr[i].uuid,
 				this->listOfChr[i].perm,
 				this->listOfChr[i].property,
 				&this->listOfChr[i].char_val,
 				&this->listOfChr[i].control);
-		if(ret != ESP_OK)
-		{
-			ESP_LOGE(GATT_SERVICE_NAME,"Characteristic failed to be added with status %d", ret);
-		}
+
 
 		for(j = 0; j < this->listOfChr[i].noOfRegistredDesc; j++)
 		{
-			ret = esp_ble_gatts_add_char_descr(this->serviceHandle,
+			this->gatts.AddCharDescr(this->serviceHandle,
 							&this->listOfChr[i].listOfDesc[j].uuid,
 							this->listOfChr[i].listOfDesc[j].perm,
 							&this->listOfChr[i].listOfDesc[j].desc_val,
 							&this->listOfChr[i].listOfDesc[j].control);
-
-			if(ret != ESP_OK)
-			{
-				ESP_LOGE(GATT_SERVICE_NAME,"Descriptor failed to be added with status %d", ret);
-			}
 		}
-
 	}
 }
 
@@ -107,23 +97,14 @@ bool GattServiceServer::NotifyAttrRegistred(uint16_t attr_handle,uint16_t servic
 
 void GattServiceServer::SendIndication(esp_gatt_if_t gatts_if, uint16_t conn_id, uint16_t attr_handle, uint16_t value_len, uint8_t *value, bool need_confirm)
 {
-	esp_err_t ret = esp_ble_gatts_send_indicate( gatts_if,  conn_id,  attr_handle,  value_len,  value,  need_confirm);
+	this->gatts.SendIndication( gatts_if,  conn_id,  attr_handle,  value_len,  value,  need_confirm);
 	ESP_LOGI(GATT_SERVICE_NAME,"Send indication with conn id %d attr_handle %d, len %d, need_conf %d", conn_id,attr_handle,value_len,need_confirm);
 	esp_log_buffer_hex(GATT_SERVICE_NAME,value,value_len);
-	if(ret != ESP_OK)
-	{
-		ESP_LOGE(GATT_SERVICE_NAME,"Send indication failed with status %d", ret);
-	}
 }
 
 void GattServiceServer::StartService(void)
 {
-	esp_err_t ret;
-	ret = esp_ble_gatts_start_service(this->serviceHandle);
-	if(ret != ESP_OK)
-	{
-		ESP_LOGI(GATT_SERVICE_NAME,"Service can't be started. Failed with error: %d", ret);
-	}
+	this->gatts.StartService(this->serviceHandle);
 }
 
 void GattServiceServer::SendResponse(esp_gatt_if_t gatts_if, uint16_t  conn_id,uint32_t trans_id,uint16_t handle,uint16_t offset,bool is_long, uint8_t *value, uint16_t value_len )
@@ -136,12 +117,7 @@ void GattServiceServer::SendResponse(esp_gatt_if_t gatts_if, uint16_t  conn_id,u
 		this->respValue.attr_value.handle = handle;
 		this->respValue.attr_value.auth_req = 0;
 		esp_log_buffer_hex(GATT_SERVICE_NAME, &this->respValue.attr_value.value[0], this->respValue.attr_value.len);
-		esp_err_t ret = esp_ble_gatts_send_response(gatts_if,conn_id,trans_id, ESP_GATT_OK, &this->respValue);
-		if(ret != ESP_OK)
-		{
-			ESP_LOGI(GATT_SERVICE_NAME,"Send data failed, Failed with error: %d", ret);
-		}
-
+		this->gatts.SendResponse(gatts_if,conn_id,trans_id, ESP_GATT_OK, &this->respValue);
 	}
 	else
 	{
@@ -149,7 +125,19 @@ void GattServiceServer::SendResponse(esp_gatt_if_t gatts_if, uint16_t  conn_id,u
 	}
 }
 
+
+bool GattServiceServer::RegisterService(esp_gatt_if_t gatts_if)
+{
+	return (this->gatts.RegisterService(gatts_if,this) == ESP_OK) ? true : false;
+}
 GattServiceServer::GattServiceServer(const GattServiceServer &serServer):GattService(serServer)
 {
 
+}
+
+GattServiceServer& GattServiceServer::operator=(const GattServiceServer& gattsServerService)
+{
+	memcpy(&this->respValue,&gattsServerService.respValue, sizeof(esp_gatt_rsp_t));
+	GattService::operator=(gattsServerService);
+	return (*this);
 }

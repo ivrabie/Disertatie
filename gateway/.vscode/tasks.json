@@ -53,7 +53,8 @@
             ],
             "presentation": {
                 "reveal": "always"
-            }
+            },
+            "problemMatcher": []
         },
         {
             "label": "monitor",

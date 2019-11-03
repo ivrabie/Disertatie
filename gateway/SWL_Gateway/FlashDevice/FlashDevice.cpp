@@ -12,16 +12,18 @@
 #include "FlashDevice.h"
 #include "FlashDevice_cfg.h"
 #include <string.h>
+
 #define CHAR_VAL_LEN_MAX 0x40
-
+#define FLASH_VERS_RESP_LEN 4u
 using namespace SWL_GATEWAY;
-
-FlashDevice::FlashDevice():BLE::BleRemoteDevice()
+const etl::message_router_id_t FLASH_CONTROL = 0;
+FlashDevice::FlashDevice(message_router_id_t id, VersionManager *vsMng,SdCard *sd,uint8_t gattc_if):
+BLE::BleRemoteDevice(),fsm(id),vsMng(vsMng),sd(sd),gattc_if(gattc_if)
 {
 	this->flashProgress = 0xFF;
 	this->flashStatus   = 0xFF;
 	this->flashMagicNumber = 0xFFFF;
-	this->flashVersion = 0xFFFF;
+	this->flashFileSize = 0x0;
 }
 
 FlashDevice::~FlashDevice()
@@ -31,290 +33,440 @@ FlashDevice::~FlashDevice()
 
 
 
-FlashDevice::FlashDevice(const FlashDevice& flashDev):BLE::BleRemoteDevice(flashDev)
+FlashDevice::FlashDevice(const FlashDevice& flashDev):BLE::BleRemoteDevice(flashDev),fsm(flashDev)
 {
+	this->flashService = flashDev.flashService;
 	this->flashProgress = flashDev.flashProgress;
 	this->flashStatus = flashDev.flashStatus;
 	this->flashMagicNumber = flashDev.flashMagicNumber;
-	this->flashVersion = flashDev.flashVersion;
-	this->flashService = flashDev.flashService;
+	this->flashFileSize = flashDev.flashFileSize;
+	this->gattc_if = flashDev.gattc_if;
+	this->sd = flashDev.sd;
+	this->vsMng = flashDev.vsMng;
+}
+
+FlashDevice& FlashDevice::operator=(const FlashDevice &dev)
+{
+	this->flashService = dev.flashService;
+	this->flashProgress = dev.flashProgress;
+	this->flashStatus = dev.flashStatus;
+	this->flashMagicNumber = dev.flashMagicNumber;
+	this->flashFileSize = dev.flashFileSize;
+	this->gattc_if = dev.gattc_if;
+	this->vsMng = dev.vsMng;
+	BleRemoteDevice::operator=(dev);
+	fsm::operator=(dev);
+	return (*this);
 }
 
 
-//
-//Characteristic  chr1;
-//Descriptor      desc1;
-//
-//Descriptor     *currentDesc;
-//Characteristic *currentChr;
-//
-//ServiceType        Flashing_ServiceInfo;
-//
-//
-//void FlashProf_GattcCallback(esp_gattc_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gattc_cb_param_t *param)
-//{
-//	esp_err_t ret;
-//	switch(event)
-//	{
-//
-//	case ESP_GATTC_REG_EVT:
-//		break;
-//
-//	case ESP_GATTC_UNREG_EVT:
-//		break;
-//	case ESP_GATTC_OPEN_EVT:
-//		if(param->open.status == ESP_GATT_OK)
-//		{
-//
-//			BLEDEVICE_UpdateDevice(param->open.conn_id,param->open.remote_bda,BLE_DEVICEINFO_FIELD_CONECTION_ID);
-//			BLEDEVICE_UpdateDevice(param->open.status,param->open.remote_bda,BLE_DEVICEINFO_FIELD_CONECTION_STATUS);
-//			BLEDEVICE_UpdateDevice(param->open.mtu,param->open.remote_bda,BLE_DEVICEINFO_FIELD_CONECTION_MTU);
-//
-//
-//			ESP_LOGI(FLASHING_NAME, "Conn id: %d \n"
-//							   	   	"Conn status %d\n"
-//							   	    "Conn mtu %d",param->open.conn_id,
-//									param->open.status,
-//									param->open.mtu);
-//
-//			ret = esp_ble_gattc_send_mtu_req(gatts_if,param->open.conn_id);
-//			  if(ret){
-//			         ESP_LOGE(FLASHING_NAME, "%s gattc req mtu failed, error code = %x\n", __func__, ret);
-//			         return;
-//			     }
-//
-////			  ret = esp_ble_gattc_search_service(gatts_if, FlashProfConnectionInfo.conn_id,NULL);
-////			  if(ret)
-////			  {
-////				 ESP_LOGE(FLASHING_NAME, "%s gattc failed to search , error code = %x\n", __func__, ret);
-////				 return;
-////			  }
-//		}
-//		else
-//		{
-//			ESP_LOGE(FLASHING_NAME, "Conn open failed with status %d",param->open.status);
-//		}
-//		break;
-//	case ESP_GATTC_READ_CHAR_EVT:
-//		ESP_LOGI(FLASHING_NAME,
-//										    "Read chr status %d\n"
-//							 	 	 	 	"Read chr conn_id: %d \n"
-//											"Read chr hdl: %d \n"
-//										    "Read chr value_len %d",
-//											param->read.status,
-//											param->read.conn_id,
-//											param->read.handle,
-//											param->read.value_len);
-//		esp_log_buffer_hex(FLASHING_NAME, param->read.value, param->read.value_len);
-//		break;
-//	case ESP_GATTC_WRITE_CHAR_EVT:
-//		break;
-//	case ESP_GATTC_CLOSE_EVT:
-//		break;
-//	case ESP_GATTC_SEARCH_CMPL_EVT:
-//		ESP_LOGI(FLASHING_NAME, "Search result id: %d \n"
-//							    "Search conn id %d\n"
-//							    "Searched service source %d",param->search_cmpl.status,
-//								param->search_cmpl.conn_id,
-//								param->search_cmpl.searched_service_source);
-//
-//		break;
-//	case ESP_GATTC_SEARCH_RES_EVT:
-////			ESP_LOGI(FLASHING_NAME,
-////								    "Search conn id %d\n"
-////					 	 	 	 	"Service start hdl: %d \n"
-////									"Service end hdl: %d \n"
-////								    "Service is primary %d\n"
-////								    "Service is len %d\n"
-////									"Service inst id %d\n"
-////									"Service uuid %d",
-////									param->search_res.conn_id,
-////									param->search_res.start_handle,
-////									param->search_res.end_handle,
-////									param->search_res.is_primary,
-////									param->search_res.srvc_id.uuid.len,
-////									param->search_res.srvc_id.inst_id,
-////									param->search_res.srvc_id.uuid.uuid.uuid16);
-////			if(param->search_res.srvc_id.uuid.uuid.uuid16 == ble_RawData.uuid && param->search_res.srvc_id.uuid.len == ESP_UUID_LEN_16)
-////			{
-////				esp_gatt_status_t ret_gattc;
-////				uint8_t i = 0;
-////				esp_gattc_char_elem_t result[3];
-////				uint16_t count = 3;
-////				ret_gattc = esp_ble_gattc_get_all_char(gatts_if, param->search_res.conn_id,param->search_res.start_handle,param->search_res.end_handle,
-////						result,&count,0);
-////				if(ret_gattc == ESP_GATT_OK)
-////				{
-////					for(i = 0; i < count; i++)
-////					{
-////						ESP_LOGI(FLASHING_NAME,
-////												"Chr handle %d\n"
-////												"Chr props: %d \n"
-////												"Chr uuid: %d \n"
-////												"Chr len: %d",
-////								result[i].char_handle,
-////								result[i].properties,
-////								result[i].uuid.uuid.uuid16,
-////								result[i].uuid.len);
-////
-////						ret = esp_ble_gattc_read_char(gatts_if, param->search_res.conn_id, result[i].char_handle, 0);
-////						if(ret)
-////						  {
-////							 ESP_LOGE(FLASHING_NAME, "%s gattc failed to read chr , error code = %x\n", __func__, ret);
-////							 return;
-////						  }
-////
-////						 esp_gattc_descr_elem_t result_desc[3];
-////						 uint16_t count_desc = 3;
-////						 ret_gattc = esp_ble_gattc_get_all_descr(gatts_if,param->search_res.conn_id,result[i].char_handle,result_desc,&count_desc,0);
-////						 uint8_t j = 0;
-////						 if(ret_gattc == ESP_GATT_OK)
-////						 {
-////							 for(j = 0; j < count_desc; j++)
-////							{
-////								ESP_LOGI(FLASHING_NAME,
-////														"Desc handle %d\n"
-////														"Desc uuid:  %d \n"
-////														"Desc len:   %d",
-////								result_desc[i].handle,
-////								result_desc[i].uuid.uuid.uuid16,
-////								result_desc[i].uuid.len);
-////
-////								ret = esp_ble_gattc_read_char_descr(gatts_if, param->search_res.conn_id, result_desc[i].handle, 0);
-////								if(ret)
-////								  {
-////									 ESP_LOGE(FLASHING_NAME, "%s gattc failed to read descr , error code = %x\n", __func__, ret);
-////									 return;
-////								  }
-////							}
-////						 }
-////						 else
-////						 {
-////							 ESP_LOGE(FLASHING_NAME, "Can't get descriptors with status %d",ret_gattc);
-////						 }
-////					}
-////				}
-////				else
-////				{
-////					ESP_LOGE(FLASHING_NAME, "Can't get characteristics with status %d",ret_gattc);
-////				}
-////			}
-//		break;
-//	case ESP_GATTC_READ_DESCR_EVT:
-////		ESP_LOGI(FLASHING_NAME,
-////												    "Read desc status %d\n"
-////									 	 	 	 	"Read desc conn_id: %d \n"
-////													"Read desc hdl: %d \n"
-////												    "Read desc value_len %d",
-////													param->read.status,
-////													param->read.conn_id,
-////													param->read.handle,
-////													param->read.value_len);
-////				esp_log_buffer_hex(FLASHING_NAME, param->read.value, param->read.value_len);
-//		break;
-//	case ESP_GATTC_WRITE_DESCR_EVT:
-//		break;
-//	case ESP_GATTC_NOTIFY_EVT:
-//		break;
-//	case ESP_GATTC_PREP_WRITE_EVT:
-//		break;
-//	case ESP_GATTC_EXEC_EVT:
-//		break;
-//	case ESP_GATTC_ACL_EVT:
-//		break;
-//	case ESP_GATTC_CANCEL_OPEN_EVT:
-//		break;
-//	case ESP_GATTC_SRVC_CHG_EVT:
-//		break;
-//	case ESP_GATTC_ENC_CMPL_CB_EVT:
-//		break;
-//	case ESP_GATTC_CFG_MTU_EVT:
-//		if(param->cfg_mtu.status == ESP_OK)
-//		{
-//			ESP_LOGI(FLASHING_NAME, "Mtu cfg status: %d \n"
-//								    "Conn id %d\n"
-//								    "Conn mtu %d",param->cfg_mtu.status,
-//									param->cfg_mtu.conn_id,
-//									param->cfg_mtu.mtu);
-//			BLEDEVICE_UpdateDeviceByConnId(param->cfg_mtu.mtu,param->cfg_mtu.conn_id,BLE_DEVICEINFO_FIELD_CONECTION_MTU);
-//		}
-//		break;
-//	case ESP_GATTC_ADV_DATA_EVT:
-//		break;
-//	case ESP_GATTC_MULT_ADV_ENB_EVT:
-//		break;
-//	case ESP_GATTC_MULT_ADV_UPD_EVT:
-//		break;
-//	case ESP_GATTC_MULT_ADV_DATA_EVT:
-//		break;
-//	case ESP_GATTC_MULT_ADV_DIS_EVT:
-//		break;
-//	case ESP_GATTC_CONGEST_EVT:
-//		break;
-//	case ESP_GATTC_BTH_SCAN_ENB_EVT:
-//		break;
-//	case ESP_GATTC_BTH_SCAN_CFG_EVT:
-//		break;
-//	case ESP_GATTC_BTH_SCAN_RD_EVT:
-//		break;
-//	case ESP_GATTC_BTH_SCAN_THR_EVT:
-//		break;
-//	case ESP_GATTC_BTH_SCAN_PARAM_EVT:
-//		break;
-//	case ESP_GATTC_BTH_SCAN_DIS_EVT:
-//		break;
-//	case ESP_GATTC_SCAN_FLT_CFG_EVT:
-//		break;
-//	case ESP_GATTC_SCAN_FLT_PARAM_EVT:
-//		break;
-//	case ESP_GATTC_SCAN_FLT_STATUS_EVT:
-//		break;
-//	case ESP_GATTC_ADV_VSC_EVT:
-//		break;
-//	case ESP_GATTC_REG_FOR_NOTIFY_EVT:
-//		break;
-//	case ESP_GATTC_UNREG_FOR_NOTIFY_EVT:
-//		break;
-//	case ESP_GATTC_CONNECT_EVT:
-//		ESP_LOGI(FLASHING_NAME, "Conn id: %d \n"
-//						   	   	"Conn params interval %d\n"
-//						   	    "Conn params latency %d\n"
-//								"Conn params timeout %d",param->connect.conn_id,
-//								param->connect.conn_params.interval,
-//								param->connect.conn_params.latency,
-//								param->connect.conn_params.timeout);
-//		break;
-//	case ESP_GATTC_DISCONNECT_EVT:
-//		break;
-//	case ESP_GATTC_READ_MULTIPLE_EVT:
-//		break;
-//	case ESP_GATTC_QUEUE_FULL_EVT:
-//		break;
-//	case ESP_GATTC_SET_ASSOC_EVT:
-//		break;
-//	case ESP_GATTC_GET_ADDR_LIST_EVT:
-//		break;
-//	case ESP_GATTC_DIS_SRVC_CMPL_EVT:
-//		ESP_LOGI(FLASHING_NAME, "Conn id: %d \n"
-//								"Conn disc status %d"
-//							    ,param->dis_srvc_cmpl.conn_id,
-//							     param->dis_srvc_cmpl.status);
-//		break;
-//
-//	}
-//}
-//
-//
-//
-//
-//
-//
-//void FlashProfile_Init(void)
-//{
-//	esp_err_t ret;
-//	BLE_RegisterProfile(FLASHING_PROFILE,FlashProf_GattcCallback);
-//
-//}
-//
-//
-//
+
+void FlashDevice::initFlashService(void)
+{
+// ESP_LOGI(FLASHING_SERVICE_NAME, " Start creating");
+	GattCharacteristic tempChr;
+	GattDescriptor     tempDesc;
+	memset(this->flashService.serviceInfo.id.uuid.uuid.uuid128,0,ESP_UUID_LEN_128);
+	this->flashService.serviceInfo.id.uuid.len = ESP_UUID_LEN_16;
+	this->flashService.serviceInfo.id.uuid.uuid.uuid16 = FLASHING_SERVICE_UUID;
+	this->flashService.serviceInfo.is_primary = true;
+	this->flashService.serviceInfo.id.inst_id = 0;
+
+	tempChr.uuid.len = ESP_UUID_LEN_16;
+	tempChr.uuid.uuid.uuid16 = FLASHING_CHR_VERSION_UUID;
+	tempChr.control.auto_rsp = ESP_GATT_RSP_BY_APP;
+	tempChr.property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE;
+	tempChr.perm =  ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE;
+	tempChr.char_val.attr_len = 0;
+	tempChr.char_val.attr_max_len = 0;
+	tempChr.char_val.attr_value = 0;
+
+	this->flashService.AddChr(&tempChr);
+	// ESP_LOGI(FLASHING_SERVICE_NAME, "Add chr");
+	tempChr.uuid.len = ESP_UUID_LEN_16;
+	tempChr.uuid.uuid.uuid16 = FLASHING_CHR_DATABLCOK_UUID;
+	tempChr.char_val.attr_len = 0;
+	tempChr.char_val.attr_max_len = 0;
+	tempChr.char_val.attr_value = 0;
+
+	tempDesc.uuid.len = ESP_UUID_LEN_16;
+	tempDesc.uuid.uuid.uuid16 = FLASHING_DESC_BLOCKSTATUS_UUID;
+	tempDesc.perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE;
+	tempDesc.control.auto_rsp = ESP_GATT_RSP_BY_APP;
+	tempDesc.desc_val.attr_len = 0;
+	tempDesc.desc_val.attr_max_len = 0;
+	tempDesc.desc_val.attr_value = 0;
+
+	tempChr.AddDesc(&tempDesc);
+
+	// ESP_LOGI(FLASHING_SERVICE_NAME, "Add desc");
+	this->flashService.AddChr(&tempChr);
+	// ESP_LOGI(FLASHING_SERVICE_NAME, "Add chr");
+	tempChr.noOfRegistredDesc = 0;
+	tempChr.uuid.len = ESP_UUID_LEN_16;
+	tempChr.uuid.uuid.uuid16 = FLASHING_CHR_ISDEVPREP_UUID;
+	tempChr.char_val.attr_len = 0;
+	tempChr.char_val.attr_max_len = 0;
+	tempChr.char_val.attr_value = 0;
+
+	this->flashService.AddChr(&tempChr);
+
+
+	tempChr.noOfRegistredDesc = 0;
+	tempChr.uuid.len = ESP_UUID_LEN_16;
+	tempChr.uuid.uuid.uuid16 = FLASHING_CHR_FILESIZE_UUID;
+	tempChr.char_val.attr_len = 0;
+	tempChr.char_val.attr_max_len = 0;
+	tempChr.char_val.attr_value = 0;
+	this->flashService.AddChr(&tempChr);
+	// ESP_LOGI(FLASHING_SERVICE_NAME, "Add chr");
+	this->flashService.numHandles = FLASHING_NUM_OF_HANDLES;
+	// ESP_LOGI(FLASHING_SERVICE_NAME, "Created");
+}
+
+
+
+void FlashDevice::RequestVersion()
+{
+	esp_bt_uuid_t uuid;
+	uuid.len = ESP_UUID_LEN_16;
+	uuid.uuid.uuid16 = FLASHING_CHR_VERSION_UUID;
+
+	this->flashService.RequestReadAttr(this->gattc_if,this->conn_id,&uuid);
+
+}
+void FlashDevice::NotifyReadAttrEvent(uint16_t handle,uint8_t *value,uint16_t value_len)
+{
+	esp_bt_uuid_t *uuid;
+	uuid = this->flashService.GetAttrUuidByHandle(handle);
+	if(uuid != NULL)
+	{
+		this->processReadAttrEvent(uuid, value, value_len);
+	}
+	else
+	{
+		ESP_LOGE(FLASH_DEVICE, "Handle %d was not found", value_len);
+	}
+}
+
+void FlashDevice::processReadAttrEvent(esp_bt_uuid_t *uuid, uint8_t *value,uint16_t value_len)
+{
+	if(uuid->len == ESP_UUID_LEN_16)
+	{
+		if(uuid->uuid.uuid16 == FLASHING_CHR_VERSION_UUID)
+		{
+			uint32_t version = 0u;
+			ESP_LOGI(FLASH_DEVICE, "Value len %d", value_len);
+			esp_log_buffer_hex(FLASH_DEVICE,value,value_len);
+
+			if(value_len == FLASH_VERS_RESP_LEN)
+			{
+				version |= (uint32_t)(value[0]<<24u);
+				version |= (uint32_t)(value[1]<<16u);
+				version |= (uint32_t)(value[2]<<8u);
+				version |= (uint32_t)(value[3]);
+				VersionRespEvt versEvt(version);
+				this->receive(versEvt);
+			}
+			else
+			{
+				// Todo create a new event for error case
+				version = 0xFFFFFFFF;
+				ESP_LOGE(FLASH_DEVICE, "Incorrect version resp len %d expected %d", value_len,FLASH_VERS_RESP_LEN);
+			}
+		}
+		else if(uuid->uuid.uuid16 == FLASHING_CHR_DATABLCOK_UUID)
+		{
+
+		}
+		else if(uuid->uuid.uuid16 == FLASHING_CHR_ISDEVPREP_UUID)
+		{
+			if(value_len == 1u)
+			{
+				if(value[0] == FLASH_UPDATE_STATUS_READY)
+				{
+					PrepReadyEvt evt;
+					this->receive(evt);
+				}
+			}
+		}
+		else if(uuid->uuid.uuid16 == FLASHING_CHR_FILESIZE_UUID)
+		{
+			
+		}
+		else if(uuid->uuid.uuid16 == FLASHING_DESC_BLOCKSTATUS_UUID)
+		{
+			if(value_len == 1u)
+			{
+				if(value[0] == (uint8_t)BLOCK_STATUS_INPROGRESS)
+				{
+					NextBlockEvt evt;
+					this->receive(evt);
+				}
+				else if(value[0] == BLOCK_STATUS_ALL_FLASHED)
+				{
+					FlashedCompleteEvt flashedCompleteEvt;
+					this->receive(flashedCompleteEvt);
+				}
+			}
+		}
+	}
+}
+
+
+
+
+void FlashDevice::processWriteAttrEvent(esp_bt_uuid_t *uuid)
+{
+	if(uuid->len == ESP_UUID_LEN_16)
+	{
+		
+		if(uuid->uuid.uuid16 == FLASHING_CHR_VERSION_UUID)
+		{
+
+		}
+		else if(uuid->uuid.uuid16 == FLASHING_CHR_DATABLCOK_UUID)
+		{
+			CheckBlockStatusEvt blockStatusEvt;
+			this->receive(blockStatusEvt);
+		}
+		else if(uuid->uuid.uuid16 == FLASHING_CHR_ISDEVPREP_UUID)
+		{
+			
+		}
+		else if(uuid->uuid.uuid16 == FLASHING_CHR_FILESIZE_UUID)
+		{
+			CheckDevReadyEvt devReadyEvt;
+			this->receive(devReadyEvt);
+		}
+		else if(uuid->uuid.uuid16 == FLASHING_DESC_BLOCKSTATUS_UUID)
+		{
+			FlashedCompleteRespEvt flashedCompleteEvt;
+			this->receive(flashedCompleteEvt);
+		}
+	}
+}
+
+void FlashDevice::RequestIsDevReady()
+{
+	esp_bt_uuid_t uuid;
+	uuid.len = ESP_UUID_LEN_16;
+	uuid.uuid.uuid16 = FLASHING_CHR_ISDEVPREP_UUID;
+	this->flashService.RequestReadAttr(this->gattc_if,this->conn_id,&uuid);
+}
+
+void FlashDevice::NotifyWriteAttrEvent(uint16_t handle)
+{
+	esp_bt_uuid_t *uuid;
+	uuid = this->flashService.GetAttrUuidByHandle(handle);
+	if(uuid != NULL)
+	{
+		this->processWriteAttrEvent(uuid);
+	}
+	else
+	{
+		ESP_LOGE(FLASH_DEVICE, "Handle %d was not found", handle);
+	}
+
+}
+
+void FlashDevice::RequestBlockStatus()
+{
+	esp_bt_uuid_t desc_uuid;
+	desc_uuid.len = ESP_UUID_LEN_16;
+	desc_uuid.uuid.uuid16 = FLASHING_DESC_BLOCKSTATUS_UUID;
+	this->flashService.RequestReadAttr(this->gattc_if,this->conn_id,&desc_uuid);
+}
+
+void FlashDevice::UpdateField(uint16_t field_value, DEVICE_UPDATEFIELD_TYPES field_type)
+{
+	switch(field_type)
+	{
+	case DEVICE_UPDATEFIELD_CONECTION_ID:
+		this->conn_id = field_value;
+		break;
+	case DEVICE_UPDATEFIELD_CONECTION_STATUS:
+		this->status = (esp_gatt_status_t)field_value;
+		break;
+	case DEVICE_UPDATEFIELD_CONECTION_MTU:
+		this->mtu = field_value;
+		break;
+	}
+}
+
+
+void FlashDevice::NotifyGattServiceDiscoverComplete()
+{
+	this->flashService.NotifyDiscoverComplete(this->gattc_if,this->conn_id);
+	if(this->flashService.IsServiceInit() == true)
+	{
+		ServiceDiscoveredEvt srvEvt;
+		this->receive(srvEvt);
+	}
+}
+
+void FlashDevice::RefreshGattServiceCache(void)
+{
+	this->flashService.RefreshServiceInfo(this->bda);
+}
+
+void FlashDevice::OpenBleConnection()
+{
+	if(this->get_state_id() == StateId::DISCONNECTED)
+	{
+		this->initFlashService();
+		this->flashService.OpenConnection(this->gattc_if,this->bda,this->ble_addr_type,true);
+	}
+	else
+	{
+		ESP_LOGE(FLASH_DEVICE, "Current state %d, already connected", this->get_state_id());
+	}
+	
+
+}
+
+void FlashDevice::InitStateMachine(void)
+{
+	this->set_states(this->stateList, StateId::MAX_STATES);
+	this->start(false);
+}
+
+void FlashDevice::LogUnknownEvent(const etl::imessage& msg)
+{
+	ESP_LOGE(FLASH_DEVICE, "Current state %d, message id %d", this->get_state_id(), msg.message_id);
+}
+
+uint32_t FlashDevice::GetCurrentVersion()
+{
+	uint32_t version = FLASH_DEFAULT;
+	if(this->vsMng == NULL)
+	{
+		ESP_LOGE(FLASH_DEVICE, "Version manager is NULL");
+	}
+	else
+	{
+		version = vsMng->GetLatestVersion();
+	}
+	return version;
+}
+
+char* FlashDevice::getFileName()
+{
+	char *fileName = NULL;
+	if(this->sd != NULL)
+	{
+		fileName = this->vsMng->GetUpdateFileName();
+		if(fileName == NULL)
+		{
+			ESP_LOGE(FLASH_DEVICE, "File name is NULL");
+		}
+	}
+	else
+	{
+		ESP_LOGE(FLASH_DEVICE, "SdCard is NULL");
+	}
+
+	return fileName;
+}
+void FlashDevice::SendFileSizeAndVersion()
+{
+	char *fileName = this->getFileName();
+	esp_bt_uuid_t uuid;
+	uuid.len = ESP_UUID_LEN_16;
+	uuid.uuid.uuid16 = FLASHING_CHR_FILESIZE_UUID;
+	uint8_t data[8u];
+	if(fileName != NULL)
+	{
+		this->flashFileSize = this->sd->GetFileLen(fileName);
+		if(flashFileSize != 0)
+		{
+			uint32_t version = this->GetCurrentVersion();
+			data[0] = (uint8_t)version;
+			data[1] = (uint8_t)(version>>8u);
+			data[2] = (uint8_t)(version>>16u);
+			data[3] = (uint8_t)(version>>24u);
+
+			data[4] = (uint8_t)this->flashFileSize;
+			data[5] = (uint8_t)(this->flashFileSize>>8u);
+			data[6] = (uint8_t)(this->flashFileSize>>16u);
+			data[7] = (uint8_t)(this->flashFileSize>>24u);
+			ESP_LOGI(FLASH_DEVICE, "Request for write version %d with len %d",version,this->flashFileSize);
+			this->flashService.RequestWriteAttr(this->gattc_if,this->conn_id,&uuid,8u,data,ESP_GATT_WRITE_TYPE_RSP,ESP_GATT_AUTH_REQ_NONE);
+		}
+		else
+		{
+			ESP_LOGE(FLASH_DEVICE, "File to flash is not present or empty");
+		}
+	}
+}
+
+bool FlashDevice::SendBlock()
+{
+	bool ret = false;
+	char *fileName = NULL;
+	esp_bt_uuid_t uuid;
+	uuid.len = ESP_UUID_LEN_16;
+	uuid.uuid.uuid16 = FLASHING_CHR_DATABLCOK_UUID;
+	if(this->sd != NULL)
+	{
+		fileName = this->vsMng->GetUpdateFileName();
+		if(fileName != NULL)
+		{
+			this->dataLen = this->sd->ReadBinaryFile(fileName,this->dataToSend,this->currentLenSent,FLASH_BLOCK_SIZE);
+			if(this->dataLen != 0)
+			{
+				this->currentLenSent += this->dataLen;
+				ESP_LOGI(FLASH_DEVICE, "File size read %d", this->dataLen);
+				ESP_LOGI(FLASH_DEVICE, "File size current read %d", this->currentLenSent);
+				this->flashService.RequestWriteAttr(this->gattc_if,
+				this->conn_id,
+				&uuid,
+				this->dataLen,
+				this->dataToSend,
+				ESP_GATT_WRITE_TYPE_RSP,
+				ESP_GATT_AUTH_REQ_NONE);
+				ret = true;
+			}
+			else
+			{
+				ESP_LOGE(FLASH_DEVICE, "Flashed should already completed");
+			}
+		}
+		else
+		{
+			ESP_LOGE(FLASH_DEVICE, "File name is NULL");
+		}
+	}
+	else
+	{
+		ESP_LOGE(FLASH_DEVICE, "SdCard is NULL");
+	}
+	return ret;
+}
+
+
+void FlashDevice::ValidateFlashing()
+{
+	uint8_t resp;
+	esp_bt_uuid_t uuid;
+	uuid.len = ESP_UUID_LEN_16;
+	uuid.uuid.uuid16 = FLASHING_DESC_BLOCKSTATUS_UUID;
+	if(this->flashFileSize == this->currentLenSent)
+	{
+		ESP_LOGI(FLASH_DEVICE, "Flashed approved by GW");
+		resp = (uint8_t)BLOCK_STATUS_FLASHED_APROVED;
+	}
+	else
+	{
+		ESP_LOGE(FLASH_DEVICE, "Flashed not approved by GW");
+		resp = (uint8_t)BLOCK_STATUS_FLASHED_NOTAPROVED;
+	}
+	this->flashService.RequestWriteAttr(this->gattc_if,
+	this->conn_id,
+	&uuid,
+	1u,
+	&resp,
+	ESP_GATT_WRITE_TYPE_RSP,
+	ESP_GATT_AUTH_REQ_NONE);
+
+}

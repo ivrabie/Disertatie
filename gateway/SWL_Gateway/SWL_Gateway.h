@@ -9,7 +9,6 @@
 #define SWL_GATEWAY_SWL_GATEWAY_H_
 
 #include<stdint.h>
-#include "../ble/Observer.h"
 #include "../FlashDevice/FlashDevice.h"
 #include <esp_gap_ble_api.h>
 #include "FlashDeviceManager/FlashDeviceManager.h"
@@ -18,12 +17,19 @@
 
 #include "../wifi/WifiAdapter.h"
 #include "../nvs_adapter/NvsAdapter.h"
+#include "../HttpClient/HttpClient.h"
+#include "../sdcard/sdcard.h"
+#include "UpdateFileApp/UpdateFileApp.h"
+#include "esp_bt.h"
 using namespace BLE;
 using namespace NVS_ADAPTER;
 using namespace WIFI_ADAPTER;
+using namespace HTTP_CLIENT;
+using namespace SDCARD;
 namespace SWL_GATEWAY
 {
-	class SwlGateway:BLE::Observer
+	class SwlGateway:public Gap_Observer,public Http_Observer, public Gattc_Observer
+
 	{
 
 
@@ -31,40 +37,45 @@ namespace SWL_GATEWAY
 
 		void processScanData(esp_ble_gap_cb_param_t *param);
 
-		void processRawData(uint8_t *data, uint8_t len, FlashDevice *device);
+		void processRawData(uint8_t *data, uint8_t len,  FlashDevice *flashDev);
 		void buildManufactureDataBuffer(uint8_t *data, uint8_t &len);
 		void triggerConnetion(void);
+
 	public:
-		uint16_t new_version;
+		uint16_t appId;
+		SdCard &sd;
+		UpdateFileApp& updateFileApp;
+		VersionManager &vers;
+
+
+		GapAdapter &gapAdapter = GapAdapter::getInstance();
+		GattClient &gattc = GattClient::getInstance();
+		WifiAdapter  &wifiAdapter = WifiAdapter::getInstance();
 		FlashDeviceManager flashDeviceManager;
-		GapAdapter *gapAdapter;
-		GattClient *gattc;
-		NVSAdapter *nvsAdapter;
-		WifiAdapter* wifiAdapter;
+		int16_t gattc_if = 0;
 
+		SwlGateway(uint16_t appId,
+		SdCard &sd,
+		UpdateFileApp& updateFileApp,
+		VersionManager &vers);
 
-
-		SwlGateway(uint16_t appId,GapAdapter *gapAdapter,GattClient *gattc,NVSAdapter *nvsAdapter,WifiAdapter *wifiAdapter);
 		~SwlGateway();
 
 		void Init(void);
 
 
 
-		void updateGap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
+		void notification(GapEventInfo info);
 
-		void updateGattc(esp_gattc_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gattc_cb_param_t *param);
+		void notification(GattcEventInfo info);
 
-		void updateGatts(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+
+		void notification(esp_http_client_event_t * evt);
+
+		void TaskMain_100ms(void);
+
+
 	};
 }
 
-
-//void SWLGW_Init(void);
-//uint16_t SWLGW_GetCurrentVersion(void);
-//void SWLGW_SetCurrentVersion(uint16_t version);
-//void SWLGW_AdvDataIndication(uint8_t *data,
-//							 uint8_t len,
-//							 esp_bd_addr_t bda,
-//							 esp_ble_addr_type_t ble_addr_type);
 #endif /* SWL_GATEWAY_SWL_GATEWAY_H_ */

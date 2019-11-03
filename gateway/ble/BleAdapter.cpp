@@ -13,14 +13,13 @@
 #include <esp_bt_defs.h>
 #include <esp_bt_main.h>
 #include "esp_gatt_common_api.h"
-#include <bt.h>
 #include <esp_log.h>
 
 
 using namespace BLE;
 #define BLE_MAX_PROFILE_HANDLE 10u
 
-
+BleAdapter BleAdapter::bleAdapter;
 
 BleAdapter::BleAdapter()
 {
@@ -91,3 +90,7 @@ bool BleAdapter::IsBleStackActive(void)
 	return this->bleAdapterState == BLEADAPTER_NO_INIT ? false : true;
 }
 
+BleAdapter& BleAdapter::getInstance(void)
+{
+	return BleAdapter::bleAdapter;
+}

@@ -21,11 +21,11 @@ using namespace WIFI_ADAPTER;
 
 #define EXAMPLE_ESP_MAXIMUM_RETRY 3u
 
-
+WifiAdapter WifiAdapter::wifiAdapter;
 int WifiAdapter::s_retry_num = 0;
 EventGroupHandle_t WifiAdapter::s_wifi_event_group;
-WifiAdapter WifiAdapter::wifiAdapter;
 WIFI_STATE_TYPE WifiAdapter::state;
+
 WifiAdapter::WifiAdapter()
 {
 
@@ -37,10 +37,6 @@ WifiAdapter::~WifiAdapter()
 }
 
 
-WifiAdapter * WifiAdapter::getInstance()
-{
-	return &WifiAdapter::wifiAdapter;
-}
 void WifiAdapter::Init(void)
 {
 
@@ -131,7 +127,10 @@ void  WifiAdapter::Connect(void)
 	}
 
 }
-
+WifiAdapter& WifiAdapter::getInstance(void)
+{
+	return WifiAdapter::wifiAdapter;
+}
 
 
 
