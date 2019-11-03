@@ -216,9 +216,6 @@ void FlashDevice::Init(void)
 
 void FlashDevice::UpdateNewImage(uint8_t *data, uint32_t len)
 {
-	
-
-
 	if(this->receivedFileLen == 0u)
 	{
 		this->ota.StartUpdate();
