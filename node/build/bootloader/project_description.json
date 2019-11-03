@@ -1,18 +1,18 @@
 {
     "project_name":       "bootloader",
-    "project_path":       "/home/ion/esp/esp-idf/components/bootloader/subproject",
-    "build_dir":          "/home/ion/esp/gateway/build/bootloader",
-    "config_file":        "/home/ion/esp/gateway/sdkconfig",
+    "project_path":       "C:/Users/Ion/Desktop/esp-idf/components/bootloader/subproject",
+    "build_dir":          "D:/Disertatie/Disertatie/node/build/bootloader",
+    "config_file":        "D:/Disertatie/Disertatie/node/sdkconfig",
     "config_defaults":    "",
     "app_elf":            "bootloader.elf",
     "app_bin":            "bootloader.bin",
-    "git_revision":       "v4.0-dev-1287-gd7e659df2-dirty",
+    "git_revision":       "v4.1-dev-592-g758db1e00",
     "phy_data_partition": "",
     "monitor_baud" : "115200",
     "config_environment" : {
-        "COMPONENT_KCONFIGS" : "/home/ion/esp/esp-idf/components/efuse/Kconfig;/home/ion/esp/esp-idf/components/esp32/Kconfig;/home/ion/esp/esp-idf/components/esp_common/Kconfig;/home/ion/esp/esp-idf/components/log/Kconfig;/home/ion/esp/esp-idf/components/spi_flash/Kconfig",
-        "COMPONENT_KCONFIGS_PROJBUILD" : "/home/ion/esp/esp-idf/components/bootloader/Kconfig.projbuild;/home/ion/esp/esp-idf/components/esptool_py/Kconfig.projbuild;/home/ion/esp/esp-idf/components/partition_table/Kconfig.projbuild"
+        "COMPONENT_KCONFIGS" : "C:/Users/Ion/Desktop/esp-idf/components/efuse/Kconfig;C:/Users/Ion/Desktop/esp-idf/components/esp32/Kconfig;C:/Users/Ion/Desktop/esp-idf/components/esp_common/Kconfig;C:/Users/Ion/Desktop/esp-idf/components/log/Kconfig;C:/Users/Ion/Desktop/esp-idf/components/spi_flash/Kconfig",
+        "COMPONENT_KCONFIGS_PROJBUILD" : "C:/Users/Ion/Desktop/esp-idf/components/bootloader/Kconfig.projbuild;C:/Users/Ion/Desktop/esp-idf/components/esptool_py/Kconfig.projbuild;C:/Users/Ion/Desktop/esp-idf/components/partition_table/Kconfig.projbuild"
     },
     "build_components" : [ "bootloader", "bootloader_support", "efuse", "esp32", "esp_common", "esp_rom", "esptool_py", "log", "main", "micro-ecc", "partition_table", "soc", "spi_flash", "xtensa", "" ],
-    "build_component_paths" : [ "/home/ion/esp/esp-idf/components/bootloader", "/home/ion/esp/esp-idf/components/bootloader_support", "/home/ion/esp/esp-idf/components/efuse", "/home/ion/esp/esp-idf/components/esp32", "/home/ion/esp/esp-idf/components/esp_common", "/home/ion/esp/esp-idf/components/esp_rom", "/home/ion/esp/esp-idf/components/esptool_py", "/home/ion/esp/esp-idf/components/log", "/home/ion/esp/esp-idf/components/bootloader/subproject/main", "/home/ion/esp/esp-idf/components/bootloader/subproject/components/micro-ecc", "/home/ion/esp/esp-idf/components/partition_table", "/home/ion/esp/esp-idf/components/soc", "/home/ion/esp/esp-idf/components/spi_flash", "/home/ion/esp/esp-idf/components/xtensa", "" ]
+    "build_component_paths" : [ "C:/Users/Ion/Desktop/esp-idf/components/bootloader", "C:/Users/Ion/Desktop/esp-idf/components/bootloader_support", "C:/Users/Ion/Desktop/esp-idf/components/efuse", "C:/Users/Ion/Desktop/esp-idf/components/esp32", "C:/Users/Ion/Desktop/esp-idf/components/esp_common", "C:/Users/Ion/Desktop/esp-idf/components/esp_rom", "C:/Users/Ion/Desktop/esp-idf/components/esptool_py", "C:/Users/Ion/Desktop/esp-idf/components/log", "C:/Users/Ion/Desktop/esp-idf/components/bootloader/subproject/main", "C:/Users/Ion/Desktop/esp-idf/components/bootloader/subproject/components/micro-ecc", "C:/Users/Ion/Desktop/esp-idf/components/partition_table", "C:/Users/Ion/Desktop/esp-idf/components/soc", "C:/Users/Ion/Desktop/esp-idf/components/spi_flash", "C:/Users/Ion/Desktop/esp-idf/components/xtensa", "" ]
 }

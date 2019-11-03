@@ -2,34 +2,34 @@
 	"sources" : 
 	[
 		{
-			"file" : "/home/ion/esp/gateway/build/CMakeFiles/bootloader"
+			"file" : "D:/Disertatie/Disertatie/node/build/CMakeFiles/bootloader"
 		},
 		{
-			"file" : "/home/ion/esp/gateway/build/CMakeFiles/bootloader.rule"
+			"file" : "D:/Disertatie/Disertatie/node/build/CMakeFiles/bootloader.rule"
 		},
 		{
-			"file" : "/home/ion/esp/gateway/build/CMakeFiles/bootloader-complete.rule"
+			"file" : "D:/Disertatie/Disertatie/node/build/CMakeFiles/bootloader-complete.rule"
 		},
 		{
-			"file" : "/home/ion/esp/gateway/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+			"file" : "D:/Disertatie/Disertatie/node/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
 		},
 		{
-			"file" : "/home/ion/esp/gateway/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+			"file" : "D:/Disertatie/Disertatie/node/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
 		},
 		{
-			"file" : "/home/ion/esp/gateway/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+			"file" : "D:/Disertatie/Disertatie/node/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
 		},
 		{
-			"file" : "/home/ion/esp/gateway/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+			"file" : "D:/Disertatie/Disertatie/node/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
 		},
 		{
-			"file" : "/home/ion/esp/gateway/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+			"file" : "D:/Disertatie/Disertatie/node/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
 		},
 		{
-			"file" : "/home/ion/esp/gateway/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+			"file" : "D:/Disertatie/Disertatie/node/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
 		},
 		{
-			"file" : "/home/ion/esp/gateway/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+			"file" : "D:/Disertatie/Disertatie/node/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
 		}
 	],
 	"target" : 

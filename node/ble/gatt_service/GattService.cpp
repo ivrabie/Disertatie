@@ -93,6 +93,43 @@ bool GattService::IsServiceInit(void)
 	}
 	return ret;
 }
+
+
+uint16_t GattService::SearchAttrHandle(esp_bt_uuid_t *uuid,AttributeType &attrType)
+{
+	uint8_t i = 0;
+	uint8_t j = 0;
+	uint16_t retHandle = 0;
+	bool isDesc = false;
+	attrType = ATTR_TYPE_NONE;
+	for(i = 0; i < this->noOfRegistredChrs; i++)
+	{
+		if(GattService::IsUuidEqual(&this->listOfChr[i].uuid,uuid) == true)
+		{
+			retHandle = this->listOfChr[i].chr_handle;
+			attrType = ATTR_TYPE_CHR;
+			break;
+		}
+		for(j = 0; j < this->listOfChr[i].noOfRegistredDesc; j++)
+		{
+			if(GattService::IsUuidEqual(&this->listOfChr[i].listOfDesc[j].uuid,uuid) == true)
+			{
+				retHandle = this->listOfChr[i].listOfDesc[j].desc_handle;
+				isDesc = true;
+				attrType = ATTR_TYPE_DESC;
+				break;
+			}
+
+		}
+		if(isDesc == true)
+		{
+			break;
+		}
+	}
+	return retHandle;
+}
+
+
 void GattCharacteristic::PrintChr(void)
 {
 	uint8_t i = 0;
@@ -384,3 +421,49 @@ GattDescriptor::~GattDescriptor()
 
 }
 
+
+GattService& GattService::operator=(const GattService &gattService)
+{
+	uint8_t i;
+	//ESP_LOGI(GATT_SERVICE_NAME, "Copy service");
+	for(i = 0; i < gattService.noOfRegistredChrs; i++)
+	{
+		this->listOfChr[i] = gattService.listOfChr[i];
+	}
+	this->noOfRegistredChrs = gattService.noOfRegistredChrs;
+	this->endServiceHandle = gattService.endServiceHandle;
+	this->numHandles = gattService.numHandles;
+	this->serviceHandle = gattService.serviceHandle;
+	memcpy((void*)&this->serviceInfo,(void*)&gattService.serviceInfo,sizeof(esp_gatt_srvc_id_t));
+	return (*this);
+}
+
+esp_bt_uuid_t* GattService::GetAttrUuidByHandle(uint16_t handle)
+{
+	uint8_t i;
+	uint8_t j;
+	esp_bt_uuid_t * ret = NULL;
+	bool isDesc = false;
+	for(i = 0; i < this->noOfRegistredChrs; i++)
+	{
+		if(this->listOfChr[i].chr_handle == handle)
+		{
+			ret = &this->listOfChr[i].uuid; // @suppress("Invalid arguments")
+			break;
+		}
+		for(j = 0; j < this->listOfChr[i].noOfRegistredDesc; j++)
+		{
+			if(this->listOfChr[i].listOfDesc[j].desc_handle == handle)
+			{
+				ret = &this->listOfChr[i].listOfDesc[j].uuid;
+				isDesc = true;
+			}
+		}
+		if(isDesc == true)
+		{
+			break;
+		}
+
+	}
+	return ret;
+}

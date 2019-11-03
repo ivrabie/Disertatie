@@ -1,13 +1,13 @@
 # Target labels
  bootloader
 # Source files and their labels
-/home/ion/esp/gateway/build/CMakeFiles/bootloader
-/home/ion/esp/gateway/build/CMakeFiles/bootloader.rule
-/home/ion/esp/gateway/build/CMakeFiles/bootloader-complete.rule
-/home/ion/esp/gateway/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
-/home/ion/esp/gateway/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
-/home/ion/esp/gateway/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
-/home/ion/esp/gateway/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
-/home/ion/esp/gateway/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
-/home/ion/esp/gateway/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
-/home/ion/esp/gateway/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+D:/Disertatie/Disertatie/node/build/CMakeFiles/bootloader
+D:/Disertatie/Disertatie/node/build/CMakeFiles/bootloader.rule
+D:/Disertatie/Disertatie/node/build/CMakeFiles/bootloader-complete.rule
+D:/Disertatie/Disertatie/node/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+D:/Disertatie/Disertatie/node/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+D:/Disertatie/Disertatie/node/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+D:/Disertatie/Disertatie/node/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
+D:/Disertatie/Disertatie/node/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+D:/Disertatie/Disertatie/node/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+D:/Disertatie/Disertatie/node/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule

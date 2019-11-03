@@ -32,10 +32,10 @@ SOFTWARE.
 #define ETL_PLATFORM_INCLUDED
 
 #include <stdint.h>
-#include <limits.h>
+#include "stl/limits.h"
 
 // Some targets do not support 8bit types.
-#define ETL_8BIT_SUPPORT (CHAR_BIT == 8)
+#define ETL_8BIT_SUPPORT (8 == 8)
 
 // Define a debug macro
 #if defined(_DEBUG) || defined(DEBUG)

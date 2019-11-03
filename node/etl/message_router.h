@@ -158,12 +158,21 @@ namespace etl
         message_router_id(id_)
     {
     }
-
+    imessage_router(const imessage_router& img_router)
+    {
+      this->successor = img_router.successor;
+      this->message_router_id = img_router.message_router_id;
+    }
+    imessage_router& operator=(const imessage_router &img_router)
+    {
+      this->successor = img_router.successor;
+      this->message_router_id = img_router.message_router_id;
+      return (*this);
+    }
   private:
 
     // Disabled.
-    imessage_router(const imessage_router&);
-    imessage_router& operator =(const imessage_router&);
+
 
     etl::imessage_router* successor;
 

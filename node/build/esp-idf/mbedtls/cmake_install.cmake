@@ -1,8 +1,8 @@
-# Install script for directory: /home/ion/esp/esp-idf/components/mbedtls
+# Install script for directory: C:/Users/Ion/Desktop/esp-idf/components/mbedtls
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/usr/local")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/gateway")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -34,7 +34,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/ion/esp/gateway/build/esp-idf/mbedtls/mbedtls/cmake_install.cmake")
+  include("D:/Disertatie/Disertatie/node/build/esp-idf/mbedtls/mbedtls/cmake_install.cmake")
 
 endif()
 

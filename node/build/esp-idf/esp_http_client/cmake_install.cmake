@@ -1,8 +1,8 @@
-# Install script for directory: /home/ion/esp/esp-idf/components/esp_http_client
+# Install script for directory: C:/Users/Ion/Desktop/esp-idf/components/esp_http_client
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/usr/local")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/gateway")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

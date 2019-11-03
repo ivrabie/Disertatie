@@ -215,7 +215,15 @@ namespace etl
         p_state(nullptr)
     {
     }
+    fsm(const etl::fsm &f):etl::imessage_router(f)
+    {
 
+    }
+    fsm& operator=(const etl::fsm &f)
+    {
+      imessage_router::operator=(f);
+      return (*this);
+    }
     //*******************************************
     /// Set the states for the FSM
     //*******************************************

@@ -9,22 +9,21 @@
 #define SWLOAD_SWLOAD_H_
 
 #include<stdint.h>
-#include "../ble/Observer.h"
+
 #include "../FlashDevice/FlashDevice.h"
 #include <esp_gap_ble_api.h>
 #include "../ble/advertising/GapAdapter.h"
-
-#include "../nvs_adapter/NvsAdapter.h"
-#include "../SWLoad/FlashDeviceManager/FlashDeviceManager.h"
 #include "../ble/gatt_server/GattServer.h"
-#include "FlashingService/FlashingService.h"
+#include "../nvs_adapter/NvsAdapter.h"
+#include "../ble/gatt_server/GattServer.h"
 using namespace BLE;
 using namespace NVS_ADAPTER;
+
 namespace SWLOAD
 {
-	class SwLoad:BLE::Observer
+	class SwLoad:public Gap_Observer, public Gatts_Observer
 	{
-
+#define FLASH_STATE_MACHINE 0u
 	typedef enum
 	{
 		SwLoadAppState_IDLE,
@@ -33,28 +32,26 @@ namespace SWLOAD
 	}SwLoadAppStateType;
 	private:
 
-		SwLoadAppStateType state;
-		FlashDevice device;
+
 		void processRawData(uint8_t *data, uint8_t len, FlashDevice *device);
 	public:
 
-		uint16_t   currentVersion;
-		FlashinService flashService;
-		GapAdapter *gapAdapter;
-		NVSAdapter *nvsAdapter;
-		GattServer *gattServer;
-		SwLoad(uint16_t appId,GapAdapter *gapAdapter,NVSAdapter *nvsAdapter,GattServer *gattServer);
+		uint16_t appId;
+		GapAdapter &gapAdapter = GapAdapter::getInstance();
+		NVSAdapter &nvsAdapter = NVSAdapter::getInstance();
+		GattServer &gattServer = GattServer::getInstance();
+		FlashDevice flashDevice;
+		uint32_t   currentVersion;
+		SwLoadAppStateType state;
+		uint16_t gatts_if;
+		SwLoad(uint16_t appId);
 		~SwLoad();
 
 		void Init(void);
 
 
-	    void updateGap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
-
-
-		void updateGattc(esp_gattc_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gattc_cb_param_t *param);
-
-		void updateGatts(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+	    void notification(GapEventInfo info);
+		void notification(GattsEventInfo info);
 	};
 }
 

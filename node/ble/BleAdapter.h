@@ -20,14 +20,19 @@ namespace BLE
 	}BLEADAPTER_STATE_TYPE;
 	class BleAdapter
 	{
+
+	private:
+		static BleAdapter bleAdapter;
+		BleAdapter();
 	public:
 
 		BLEADAPTER_STATE_TYPE bleAdapterState;
 
-		BleAdapter();
+		
 		~BleAdapter();
 		esp_err_t Init(void);
 		bool IsBleStackActive(void);
+		static BleAdapter& getInstance(void);
 	};
 
 }

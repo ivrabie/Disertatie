@@ -23,12 +23,23 @@ using namespace BLE;
 #define SERVICE_DATA_TEST  5u
 
 
-uint8_t GapAdapter::noObsReg = 0u;
-Observer* GapAdapter::obsReg[5] = {};
-esp_ble_adv_params_t GapAdapter::adv_params;
-GapAdapter::GapAdapter(BleAdapter *ble)
+
+GapAdapter GapAdapter::gapAdapter;
+etl::function_imp<GapAdapter, GapEventInfo, GapAdapter::gapAdapter, &GapAdapter::gap_event_handler> gap_callback;
+etl::ifunction<GapEventInfo>* gapEventHandler = NULL;
+extern "C"
 {
-	uint8_t i = 0;
+	void gapEventHandlerCbk(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
+	{
+		GapEventInfo info;
+		info.event = event;
+		info.param = param;
+		(*gapEventHandler)(info);
+	}
+}
+
+GapAdapter::GapAdapter()
+{
 	this->scanParams.scan_type = BLE_SCAN_TYPE_ACTIVE;
 	this->scanParams.own_addr_type = BLE_ADDR_TYPE_PUBLIC;
 	this->scanParams.scan_filter_policy =BLE_SCAN_FILTER_ALLOW_ALL;
@@ -36,20 +47,13 @@ GapAdapter::GapAdapter(BleAdapter *ble)
 	this->scanParams.scan_window = 0x5;
 	this->scanParams.scan_duplicate =  BLE_SCAN_DUPLICATE_DISABLE;
 
-	for(i = 0; i < MAX_OBSERVERS; i++)
-	{
-		GapAdapter::obsReg[i] = NULL;
-	}
-
-	this->bleAdapter = ble;
-
 	this->rawDataSize = 0u;
-	GapAdapter::adv_params.adv_int_min = 0x20;
-	GapAdapter::adv_params.adv_int_max = 0x40,
-	GapAdapter::adv_params.adv_type    = ADV_TYPE_IND,
-	GapAdapter::adv_params.own_addr_type = BLE_ADDR_TYPE_PUBLIC;
-	GapAdapter::adv_params.channel_map  = ADV_CHNL_ALL;
-	GapAdapter::adv_params.adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY;
+	this->adv_params.adv_int_min = 0x20;
+	this->adv_params.adv_int_max = 0x40,
+	this->adv_params.adv_type    = ADV_TYPE_IND,
+	this->adv_params.own_addr_type = BLE_ADDR_TYPE_PUBLIC;
+	this->adv_params.channel_map  = ADV_CHNL_ALL;
+	this->adv_params.adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY;
 
 
 
@@ -61,17 +65,17 @@ GapAdapter::~GapAdapter()
 esp_err_t GapAdapter::IsBleStackInit()
 {
 	esp_err_t ret = ESP_FAIL;
-	if(this->bleAdapter != NULL)
+	// if(this->bleAdapter != NULL)
+	// {
+	if(this->bleAdapter.bleAdapterState != BLEADAPTER_INIT)
 	{
-		if(this->bleAdapter->bleAdapterState != BLEADAPTER_INIT)
-		{
-			ret = this->bleAdapter->Init();
-		}
-		else
-		{
-			ret = ESP_OK;
-		}
+		ret = this->bleAdapter.Init();
 	}
+	else
+	{
+		ret = ESP_OK;
+	}
+	// }
 	return ret;
 }
 
@@ -86,7 +90,7 @@ esp_err_t GapAdapter::Init()
 	}
 
 
-	ret = esp_ble_gap_register_callback(GapAdapter::gap_event_handler);
+	ret = esp_ble_gap_register_callback(gapEventHandlerCbk);
 	 if (ret){
 		 ESP_LOGE(GAP_NAME, "gap register error, error code = %x", ret);
 		 return ret;
@@ -132,24 +136,14 @@ esp_err_t GapAdapter::StopScan(void)
 	}
 	return scan_ret;
 }
-void GapAdapter::AttachObserver(Observer *obs)
-{
-	Observer::AttachObs(GapAdapter::obsReg, GapAdapter::noObsReg, MAX_OBSERVERS, obs);
-}
-void GapAdapter::DeleteObserver(Observer *obs)
-{
-	Observer::DeleteObs(GapAdapter::obsReg, GapAdapter::noObsReg, obs);
-}
-void GapAdapter::DeleteObserver(uint8_t idx)
-{
-	Observer::DeleteObs(GapAdapter::obsReg, GapAdapter::noObsReg, idx);
-}
 
-void GapAdapter::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
+void GapAdapter::gap_event_handler(GapEventInfo info)
 {
+	esp_gap_ble_cb_event_t  event = info.event;
+	esp_ble_gap_cb_param_t *param = info.param;
 	ESP_LOGI(GAP_NAME, "GAP Event: %d", event);
 	esp_err_t ret;
-	uint8_t i = 0;
+
 	switch(event)
 	{
 	case ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT:
@@ -162,13 +156,12 @@ void GapAdapter::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_
 		ESP_LOGI(GAP_NAME, "Status %d", param->scan_rsp_data_cmpl.status);
 		break;
 	case ESP_GAP_BLE_SCAN_RESULT_EVT:
-//		GapAdapter::processScanData(param);
 		break;
 	case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT:
 		ESP_LOGI(GAP_NAME, "Status %d", param->adv_data_raw_cmpl.status);
 		if(param->adv_data_raw_cmpl.status == ESP_BT_STATUS_SUCCESS)
 		{
-			ret = esp_ble_gap_start_advertising(&GapAdapter::adv_params);
+			ret = esp_ble_gap_start_advertising(&this->adv_params);
 			if (ret)
 			{
 				ESP_LOGE(GAP_NAME, "start advertising, error code = %x", ret);
@@ -230,20 +223,8 @@ void GapAdapter::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_
 		break;
 
 	}
-	for(i = 0; i < GapAdapter::noObsReg; i++)
-	{
-		GapAdapter::obsReg[i]->updateGap(event, param);
-	}
+	this->notify_observers(info);
 }
-
-
-
-
-
-
-
-
-
 
 int8_t GapAdapter::StartAdvertising(uint8_t *manufactureData, uint8_t len)
 {
@@ -296,10 +277,19 @@ int8_t GapAdapter::SetDeviceName(uint8_t *devName, uint8_t len)
 int8_t GapAdapter::StartAdvertising(void)
 {
 	int8_t ret = 0;
-	ret = (int8_t)esp_ble_gap_start_advertising(&GapAdapter::adv_params);
+	ret = (int8_t)esp_ble_gap_start_advertising(&this->adv_params);
 	if (ret)
 	{
 		ESP_LOGE(GAP_NAME, "start advertising, error code = %x", ret);
 	}
 	return ret;
+}
+
+GapAdapter& GapAdapter::getInstance(void)
+{
+	if(gapEventHandler == NULL)
+	{
+		gapEventHandler = &gap_callback;
+	}
+	return GapAdapter::gapAdapter;
 }

@@ -3,7 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := gateway
+PROJECT_NAME := node
 
 include $(IDF_PATH)/make/project.mk
 

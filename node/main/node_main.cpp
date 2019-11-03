@@ -36,13 +36,7 @@ using namespace NVS_ADAPTER;
 // Task pointers
 
 // Init global classes
-NVSAdapter nvs;
-BLE::BleAdapter bleAdap;
-BLE::GapAdapter gapAdap(&bleAdap);
-BLE::GattServer gatts(&bleAdap);
-SWLOAD::SwLoad swlApp(SWL_APP,&gapAdap,&nvs,&gatts); // @suppress("Abstract class cannot be instantiated")
-
-
+SWLOAD::SwLoad swlApp(SWL_APP); // @suppress("Abstract class cannot be instantiated")
 // Function that implements the task being created.
 extern "C" void vTaskCode_10ms( void * pvParameters )
 {
@@ -81,8 +75,6 @@ extern "C" void app_main()
             (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
 
     /* Init code */
-    gapAdap.AttachObserver((Observer*)&swlApp);
-    gatts.AttachObserver((Observer*)&swlApp);
     swlApp.Init();
 
 

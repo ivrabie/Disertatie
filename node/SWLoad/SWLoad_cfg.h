@@ -14,7 +14,7 @@
 
 #define SWLOAD_FLASH_UUID 0x0001u
 
-#define SWLOAD_MAGIC_NUMBER 0xA5A5u
+
 
 
 

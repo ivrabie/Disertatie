@@ -12,6 +12,13 @@
 
 namespace BLE
 {
+
+typedef enum
+{
+	ATTR_TYPE_NONE,
+	ATTR_TYPE_CHR,
+	ATTR_TYPE_DESC
+}AttributeType;
 #define SERVICE_PER_BOARD 2u
 #define GATT_SERVICE_NAME "GATT_SERVICE"
 	class GattDescriptor
@@ -84,6 +91,9 @@ public:
 			void Update(esp_gatt_srvc_id_t *serviceInfo,uint16_t service_handle);
 			void Update(uint16_t attr_handle,uint16_t service_handle,esp_bt_uuid_t *uuid);
 			static bool IsUuidEqual(esp_bt_uuid_t *uuid, esp_bt_uuid_t *uuid1);
+			esp_bt_uuid_t* GetAttrUuidByHandle(uint16_t handle);
+			uint16_t SearchAttrHandle(esp_bt_uuid_t *uuid,AttributeType &attrType);
+			GattService& operator=(const GattService &gattService);
 
 	};
 

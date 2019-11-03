@@ -24,6 +24,8 @@ namespace BLE
 		esp_gatt_status_t status;       /*!< Operation status */
 		uint16_t conn_id;               /*!< Connection id */
 		uint16_t mtu;
+
+		BleRemoteDevice& operator=(const BleRemoteDevice &dev);
 	};
 }
 
