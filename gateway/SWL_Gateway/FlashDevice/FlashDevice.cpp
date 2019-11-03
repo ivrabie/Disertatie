@@ -53,6 +53,7 @@ FlashDevice& FlashDevice::operator=(const FlashDevice &dev)
 	this->flashMagicNumber = dev.flashMagicNumber;
 	this->flashFileSize = dev.flashFileSize;
 	this->gattc_if = dev.gattc_if;
+	this->currentLenSent = dev.currentLenSent;
 	this->vsMng = dev.vsMng;
 	BleRemoteDevice::operator=(dev);
 	fsm::operator=(dev);
@@ -166,7 +167,7 @@ void FlashDevice::processReadAttrEvent(esp_bt_uuid_t *uuid, uint8_t *value,uint1
 				version |= (uint32_t)(value[2]<<8u);
 				version |= (uint32_t)(value[3]);
 				VersionRespEvt versEvt(version);
-				this->receive(versEvt);
+				this->receive(*this,versEvt);
 			}
 			else
 			{
@@ -186,7 +187,7 @@ void FlashDevice::processReadAttrEvent(esp_bt_uuid_t *uuid, uint8_t *value,uint1
 				if(value[0] == FLASH_UPDATE_STATUS_READY)
 				{
 					PrepReadyEvt evt;
-					this->receive(evt);
+					this->receive(*this,evt);
 				}
 			}
 		}
@@ -201,12 +202,12 @@ void FlashDevice::processReadAttrEvent(esp_bt_uuid_t *uuid, uint8_t *value,uint1
 				if(value[0] == (uint8_t)BLOCK_STATUS_INPROGRESS)
 				{
 					NextBlockEvt evt;
-					this->receive(evt);
+					this->receive(*this,evt);
 				}
 				else if(value[0] == BLOCK_STATUS_ALL_FLASHED)
 				{
 					FlashedCompleteEvt flashedCompleteEvt;
-					this->receive(flashedCompleteEvt);
+					this->receive(*this,flashedCompleteEvt);
 				}
 			}
 		}
@@ -228,7 +229,7 @@ void FlashDevice::processWriteAttrEvent(esp_bt_uuid_t *uuid)
 		else if(uuid->uuid.uuid16 == FLASHING_CHR_DATABLCOK_UUID)
 		{
 			CheckBlockStatusEvt blockStatusEvt;
-			this->receive(blockStatusEvt);
+			this->receive(*this,blockStatusEvt);
 		}
 		else if(uuid->uuid.uuid16 == FLASHING_CHR_ISDEVPREP_UUID)
 		{
@@ -237,12 +238,12 @@ void FlashDevice::processWriteAttrEvent(esp_bt_uuid_t *uuid)
 		else if(uuid->uuid.uuid16 == FLASHING_CHR_FILESIZE_UUID)
 		{
 			CheckDevReadyEvt devReadyEvt;
-			this->receive(devReadyEvt);
+			this->receive(*this,devReadyEvt);
 		}
 		else if(uuid->uuid.uuid16 == FLASHING_DESC_BLOCKSTATUS_UUID)
 		{
 			FlashedCompleteRespEvt flashedCompleteEvt;
-			this->receive(flashedCompleteEvt);
+			this->receive(*this,flashedCompleteEvt);
 		}
 	}
 }
@@ -297,11 +298,11 @@ void FlashDevice::UpdateField(uint16_t field_value, DEVICE_UPDATEFIELD_TYPES fie
 
 void FlashDevice::NotifyGattServiceDiscoverComplete()
 {
-	this->flashService.NotifyDiscoverComplete(this->gattc_if,this->conn_id);
-	if(this->flashService.IsServiceInit() == true)
+	bool ret = this->flashService.NotifyDiscoverComplete(this->gattc_if,this->conn_id);
+	if(ret == true)
 	{
 		ServiceDiscoveredEvt srvEvt;
-		this->receive(srvEvt);
+		this->receive(*this,srvEvt);
 	}
 }
 
@@ -312,8 +313,11 @@ void FlashDevice::RefreshGattServiceCache(void)
 
 void FlashDevice::OpenBleConnection()
 {
+	this->InitStateMachine();
+	ESP_LOGE(FLASH_DEVICE, "On connection state %d", this->get_state_id());
 	if(this->get_state_id() == StateId::DISCONNECTED)
 	{
+		
 		this->initFlashService();
 		this->flashService.OpenConnection(this->gattc_if,this->bda,this->ble_addr_type,true);
 	}
@@ -443,6 +447,7 @@ bool FlashDevice::SendBlock()
 	}
 	return ret;
 }
+
 
 
 void FlashDevice::ValidateFlashing()

@@ -34,7 +34,8 @@ namespace SWL_GATEWAY
 
 
 	private:
-
+		bool isScanningRunning = false;
+		bool isFlashingInProgress = false;
 		void processScanData(esp_ble_gap_cb_param_t *param);
 
 		void processRawData(uint8_t *data, uint8_t len,  FlashDevice *flashDev);
@@ -53,7 +54,6 @@ namespace SWL_GATEWAY
 		WifiAdapter  &wifiAdapter = WifiAdapter::getInstance();
 		FlashDeviceManager flashDeviceManager;
 		int16_t gattc_if = 0;
-
 		SwlGateway(uint16_t appId,
 		SdCard &sd,
 		UpdateFileApp& updateFileApp,

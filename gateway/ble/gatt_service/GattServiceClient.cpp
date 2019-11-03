@@ -22,7 +22,7 @@ GattServiceClient::~GattServiceClient()
 {
 
 }
-void GattServiceClient::NotifyDiscoverComplete(esp_gatt_if_t gattc_if, uint16_t conn_id)
+bool GattServiceClient::NotifyDiscoverComplete(esp_gatt_if_t gattc_if, uint16_t conn_id)
 {
 	uint16_t count= 1;
 	esp_gattc_service_elem_t result;
@@ -30,49 +30,59 @@ void GattServiceClient::NotifyDiscoverComplete(esp_gatt_if_t gattc_if, uint16_t 
 	esp_gattc_descr_elem_t   resultDesc;
 	uint8_t i = 0;
 	uint8_t j = 0;
-	this->PrintService();
-	esp_gatt_status_t ret = this->gattc.GetService(gattc_if,conn_id,&this->serviceInfo.id.uuid,&result, &count, 0);
-	ESP_LOGI(GATT_SERVICECLIENT_NAME, "Count service %d",count);
-	if(ESP_GATT_OK == ret && count != 0u)
+	bool retVal = false;
+	if(this->IsServiceInit() == false)
 	{
-		ESP_LOGI(GATT_SERVICECLIENT_NAME, "Result handle %d",result.start_handle);
-		this->serviceHandle = result.start_handle;
-		this->serviceInfo.is_primary = result.is_primary;
-		this->endServiceHandle = result.end_handle;
-
-		for(i = 0; i < this->noOfRegistredChrs; i++)
+		this->PrintService();
+		esp_gatt_status_t ret = this->gattc.GetService(gattc_if,conn_id,&this->serviceInfo.id.uuid,&result, &count, 0);
+		ESP_LOGI(GATT_SERVICECLIENT_NAME, "Count service %d",count);
+		if(ESP_GATT_OK == ret && count != 0u)
 		{
-			count = 1;
-			ret = this->gattc.GetCharByUuid(gattc_if,conn_id,this->serviceHandle,this->endServiceHandle,this->listOfChr[i].uuid,&resultChr,&count);
-			ESP_LOGI(GATT_SERVICECLIENT_NAME, "Count chr %d",count);
-			if(ESP_GATT_OK == ret && count != 0u)
+			ESP_LOGI(GATT_SERVICECLIENT_NAME, "Result handle %d",result.start_handle);
+			this->serviceHandle = result.start_handle;
+			this->serviceInfo.is_primary = result.is_primary;
+			this->endServiceHandle = result.end_handle;
+
+			for(i = 0; i < this->noOfRegistredChrs; i++)
 			{
-				ESP_LOGI(GATT_SERVICECLIENT_NAME, "Result handle %d",resultChr.char_handle);
-				this->listOfChr[i].chr_handle = resultChr.char_handle;
-				this->listOfChr[i].property = resultChr.properties;
-				for(j = 0; j < this->listOfChr[i].noOfRegistredDesc; j++)
+				count = 1;
+				ret = this->gattc.GetCharByUuid(gattc_if,conn_id,this->serviceHandle,this->endServiceHandle,this->listOfChr[i].uuid,&resultChr,&count);
+				ESP_LOGI(GATT_SERVICECLIENT_NAME, "Count chr %d",count);
+				if(ESP_GATT_OK == ret && count != 0u)
 				{
-					count = 1;
-					ret = this->gattc.GetDescByUuid(gattc_if, conn_id,this->serviceHandle,this->endServiceHandle,this->listOfChr[i].uuid,this->listOfChr[i].listOfDesc[j].uuid,&resultDesc,&count);
-					ESP_LOGI(GATT_SERVICECLIENT_NAME, "Count desc %d",count);
-					if(ESP_GATT_OK == ret && count != 0u)
+					ESP_LOGI(GATT_SERVICECLIENT_NAME, "Result handle %d",resultChr.char_handle);
+					this->listOfChr[i].chr_handle = resultChr.char_handle;
+					this->listOfChr[i].property = resultChr.properties;
+					for(j = 0; j < this->listOfChr[i].noOfRegistredDesc; j++)
 					{
-						ESP_LOGI(GATT_SERVICECLIENT_NAME, "Result handle %d",resultDesc.handle);
-						this->listOfChr[i].listOfDesc[j].desc_handle = resultDesc.handle;
+						count = 1;
+						ret = this->gattc.GetDescByUuid(gattc_if, conn_id,this->serviceHandle,this->endServiceHandle,this->listOfChr[i].uuid,this->listOfChr[i].listOfDesc[j].uuid,&resultDesc,&count);
+						ESP_LOGI(GATT_SERVICECLIENT_NAME, "Count desc %d",count);
+						if(ESP_GATT_OK == ret && count != 0u)
+						{
+							ESP_LOGI(GATT_SERVICECLIENT_NAME, "Result handle %d",resultDesc.handle);
+							this->listOfChr[i].listOfDesc[j].desc_handle = resultDesc.handle;
+						}
 					}
 				}
-			}
 
+			}
 		}
-	}
-	if(this->IsServiceInit() == true)
-	{
-		ESP_LOGI(GATT_SERVICECLIENT_NAME, "Service was discovered");
+		if(this->IsServiceInit() == true)
+		{
+			ESP_LOGI(GATT_SERVICECLIENT_NAME, "Service was discovered");
+			retVal = true;
+		}
+		else
+		{
+			ESP_LOGE(GATT_SERVICECLIENT_NAME, "Service failed to be discovered");
+		}
 	}
 	else
 	{
-		ESP_LOGE(GATT_SERVICECLIENT_NAME, "Service failed to be discovered");
+		ESP_LOGW(GATT_SERVICECLIENT_NAME, "Service already discovered");
 	}
+	return retVal;
 }
 void GattServiceClient::RefreshServiceInfo(esp_bd_addr_t remote_bda)
 {

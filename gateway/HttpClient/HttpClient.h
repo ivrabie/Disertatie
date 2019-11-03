@@ -33,7 +33,7 @@ typedef etl::observer<esp_http_client_event_t *> Http_Observer;
 	public:
 
 		static HttpClient http;
-		void PerformRequest(const char *url);
+		bool PerformRequest(const char *url);
 		void RequestStreamData(void);
 		void httpEventHandler(esp_http_client_event_t *evt);
 		static HttpClient& getInstance(void);

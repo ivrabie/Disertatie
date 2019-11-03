@@ -18,20 +18,20 @@ FlashDeviceManager::~FlashDeviceManager()
 
 }
 
-void FlashDeviceManager::RegisterDevice(FlashDevice *device)
+bool FlashDeviceManager::RegisterDevice(FlashDevice *device)
 {
 	uint8_t i = 0;
 	for(i = 0; i < this->listOfDevice.size(); i++)
 	{
 		if(memcmp((void *)this->listOfDevice[i].bda,(void *)device->bda,ESP_BD_ADDR_LEN) == 0)
 		{
-			return;
+			return false;
 		}
 	}
 	this->listOfDevice.push_back(*device);
 	ESP_LOGI(FLASHDEVICEMANAGER, "Added device %d",this->listOfDevice.size());
-	this->listOfDevice[this->listOfDevice.size() - 1u].InitStateMachine();
-	ESP_LOGI(FLASHDEVICEMANAGER, "Init state machine");
+	return true;
+
 }
 
 
@@ -183,9 +183,6 @@ void FlashDeviceManager::NotifyReadEvtAttr(uint16_t conn_id,uint16_t handle,uint
 		{
 			this->listOfDevice[i].NotifyReadAttrEvent(handle,value,value_len);
 			break;
-				//this->bufferedEvents.listOfEvents[this->bufferedEvents.currentListIdxUsed][j].handle,
-			// this->bufferedEvents.listOfEvents[this->bufferedEvents.currentListIdxUsed][j].val,
-			// this->bufferedEvents.listOfEvents[this->bufferedEvents.currentListIdxUsed][j].val_len);
 		}
 	}
 
@@ -218,7 +215,6 @@ void FlashDeviceManager::OpenAllConenction()
 	if(this->listOfDevice.size() != 0)
 	{
 		ESP_LOGE(FLASHDEVICEMANAGER, "Connection id %d, router id %d",this->listOfDevice[0].conn_id,this->listOfDevice[0].get_message_router_id());
-		ESP_LOGE(FLASHDEVICEMANAGER, "Connection id %d",this->listOfDevice[0].conn_id);
 		esp_log_buffer_hex(FLASHDEVICEMANAGER,this->listOfDevice[0].bda, 6u);
 		this->listOfDevice[0].OpenBleConnection();
 	}
@@ -232,7 +228,7 @@ void FlashDeviceManager::UpdateState(const etl::imessage& message, esp_bd_addr_t
 	{
 		if(memcmp((void *)this->listOfDevice[i].bda,(void *)bda,ESP_BD_ADDR_LEN) == 0)
 		{
-			this->listOfDevice[i].receive(message);
+			this->listOfDevice[i].receive(this->listOfDevice[i],message);
 			break;
 		}
 	}	

@@ -49,7 +49,7 @@ ESP_LOGI(SWLGW_NAME, "Event SWL %d", event);
 			if(param->scan_rst.search_evt == ESP_GAP_SEARCH_INQ_CMPL_EVT)
 			{
 				ESP_LOGI(SWLGW_NAME, "Try create conenctions");
-				this->triggerConnetion();
+				this->isScanningRunning = false;
 			}
 			else
 			{
@@ -82,6 +82,7 @@ void SwlGateway::Init(void)
 	this->wifiAdapter.Init();
 	this->wifiAdapter.Connect();
 	this->gapAdapter.StartScan(5u);
+	this->isScanningRunning = true;
 
 }
 
@@ -162,6 +163,7 @@ void SwlGateway::notification(GattcEventInfo info)
 					else
 					{
 						ESP_LOGE(SWLGW_NAME, "Conn open failed with status %d",param->open.status);
+						this->flashDeviceManager.NotifyDisconnect(param->open.remote_bda);
 					}
 					break;
 				case ESP_GATTC_READ_CHAR_EVT:
@@ -370,8 +372,10 @@ void SwlGateway::processScanData(esp_ble_gap_cb_param_t *param)
 				flashDev.ble_addr_type = param->scan_rst.ble_addr_type;
 				flashDev.gattc_if = this->gattc_if;
 				memcpy((void *)flashDev.bda,(void *)param->scan_rst.bda,ESP_BD_ADDR_LEN);
-				this->flashDeviceManager.RegisterDevice(&flashDev);
-				router_id = router_id + 1u;
+				if(this->flashDeviceManager.RegisterDevice(&flashDev) == true)
+				{
+					router_id = router_id + 1u;
+				}
 			}
 		}
 }
@@ -389,5 +393,24 @@ void SwlGateway::notification(esp_http_client_event_t * evt)
 
 void SwlGateway::TaskMain_100ms(void)
 {
+
+	if(this->isScanningRunning == false && 
+		this->flashDeviceManager.listOfDevice.size() == 0)
+	{
+		this->gapAdapter.StartScan(5u);
+		this->isScanningRunning = true;
+		this->isFlashingInProgress = false;
+		this->updateFileApp.EnableUpdateFileApp(true);
+	}
+
+	if(this->isScanningRunning == false && 
+		this->flashDeviceManager.listOfDevice.size() != 0
+		&& this->isFlashingInProgress == false
+		&& this->updateFileApp.EnableUpdateFileApp(false) == true)
+		{
+			this->triggerConnetion();
+			this->isFlashingInProgress = true;
+		}
 	this->updateFileApp.UpdateFileAppMainFunction(100);
+
 }

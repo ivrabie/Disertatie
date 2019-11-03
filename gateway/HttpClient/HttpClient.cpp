@@ -42,8 +42,9 @@ void HttpClient::httpEventHandler(esp_http_client_event_t *evt)
 	this->notify_observers(evt);
 }
 
-void HttpClient::PerformRequest(const char *url)
+bool HttpClient::PerformRequest(const char *url)
 {
+	bool ret = false;
 	if(WifiAdapter::state == WIFI_STATE_CONNECTED)
 	{
 		this->httpClientConfig.url = url;  //"http://192.168.100.2:8000/download/";
@@ -57,11 +58,13 @@ void HttpClient::PerformRequest(const char *url)
 			ESP_LOGI(HTTP_CLIENT_TAG, "HTTP GET Status = %d, content_length = %d",
 					esp_http_client_get_status_code(this->clientHandle),
 					esp_http_client_get_content_length(this->clientHandle));
+			ret = true;
 		} else {
 			ESP_LOGE(HTTP_CLIENT_TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
 		}
 		esp_http_client_cleanup(this->clientHandle);
 	}
+	return ret;
 }
 
 HttpClient& HttpClient::getInstance(void)

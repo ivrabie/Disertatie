@@ -218,10 +218,13 @@ namespace etl
     }
     fsm(const etl::fsm &f):etl::imessage_router(f)
     {
-
+      this->p_state = NULL;
+      this->number_of_states = 0u;
     }
     fsm& operator=(const etl::fsm &f)
     {
+      this->p_state = NULL;
+      this->number_of_states = 0u;
       imessage_router::operator=(f);
       return (*this);
     }

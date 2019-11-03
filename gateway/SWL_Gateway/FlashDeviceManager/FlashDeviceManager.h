@@ -54,7 +54,7 @@ struct BufferedInfo
 			BufferedInfo bufferedEvents;
 			FlashDeviceManager();
 			~FlashDeviceManager();
-			void RegisterDevice(FlashDevice *flashService);
+			bool RegisterDevice(FlashDevice *flashService);
 			void RemoveDevice(uint16_t conn_id);
 			void RemoveDevice(esp_bd_addr_t bda);
 			void UpdateDevice(uint16_t conn_id, uint16_t field_value, DEVICE_UPDATEFIELD_TYPES field_type);

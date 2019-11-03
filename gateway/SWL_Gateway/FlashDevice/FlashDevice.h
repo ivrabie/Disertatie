@@ -79,7 +79,6 @@ typedef enum
 		uint8_t flashProgress;
 		uint16_t flashMagicNumber;
 		uint32_t flashFileSize = 0u;
-		uint16_t blockNo = 0;
 		uint8_t dataToSend[FLASH_BLOCK_SIZE];
 		uint32_t dataLen = 0u;
 		uint32_t currentLenSent = 0u;
@@ -97,7 +96,7 @@ typedef enum
 		ifsm_state* stateList[StateId::MAX_STATES] =
 		{
 		&this->disconnectState, &this->connectState, &this->serverDiscoveredState,
-		&this->versionReceivedState, &this->sendBlockState, &this->deleteState, &flashCompleteState
+		&this->versionReceivedState, &this->sendBlockState, &this->deleteState, &this->flashCompleteState
 		};
 		FlashDevice(message_router_id_t id, VersionManager *vsMng, SdCard *sd,uint8_t gattc_if);
 		FlashDevice(const FlashDevice& flashDev);
