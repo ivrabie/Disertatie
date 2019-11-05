@@ -162,10 +162,10 @@ void FlashDevice::processReadAttrEvent(esp_bt_uuid_t *uuid, uint8_t *value,uint1
 
 			if(value_len == FLASH_VERS_RESP_LEN)
 			{
-				version |= (uint32_t)(value[0]<<24u);
-				version |= (uint32_t)(value[1]<<16u);
-				version |= (uint32_t)(value[2]<<8u);
-				version |= (uint32_t)(value[3]);
+				version |= (uint32_t)(value[0]);
+				version |= (uint32_t)(value[1]<<8u);
+				version |= (uint32_t)(value[2]<<16u);
+				version |= (uint32_t)(value[3]<<24u);
 				VersionRespEvt versEvt(version);
 				this->receive(*this,versEvt);
 			}
