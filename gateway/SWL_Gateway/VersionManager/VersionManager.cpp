@@ -64,6 +64,7 @@ void VersionManager::UpdateVersion(uint32_t version_value, char *fileName)
     err = this->nvs.Write(FILEPATH_KEY,fileName);
     if(err == ESP_OK)
     {
+        memset(this->path,0,this->path_len);
         this->path_len = strlen(fileName);
         memcpy(this->path,fileName,this->path_len);
     }
