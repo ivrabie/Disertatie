@@ -32,10 +32,8 @@ typedef etl::observer<GattsEventInfo> Gatts_Observer;
 	 BleAdapter& bleAdapter = BleAdapter::getInstance();
 	 static GattServer gattServer;
 	 GattServer();
-
 	 esp_err_t Init(void);
 	 ~GattServer();
-
 	void RegisterApp(uint16_t appId);
 	esp_err_t OpenConnection(esp_gatt_if_t gatts_if, esp_bd_addr_t remote_bda, bool is_direct);
 	esp_err_t RegisterService(esp_gatt_if_t gatts_if,GattService *service);
@@ -54,7 +52,6 @@ typedef etl::observer<GattsEventInfo> Gatts_Observer;
 	void gattsCallback(GattsEventInfo info);
 	static GattServer& getInstance(void);
  };
-
 }
 
 

@@ -113,12 +113,9 @@ esp_err_t GattServer::SendResponse(esp_gatt_if_t gatts_if, uint16_t conn_id, uin
 	}
 	return ret;
 }
-esp_err_t GattServer::StartService(uint16_t service_handle)
-{
-	esp_err_t ret;
-	ret = esp_ble_gatts_start_service(service_handle);
-	if(ret != ESP_OK)
-	{
+esp_err_t GattServer::StartService(uint16_t service_handle){
+	esp_err_t ret = esp_ble_gatts_start_service(service_handle);
+	if(ret != ESP_OK){
 		ESP_LOGI(GATT_SERVICE_NAME,"Service can't be started. Failed with error: %d", ret);
 	}
 	return ret;
@@ -127,8 +124,7 @@ esp_err_t GattServer::SendIndication(esp_gatt_if_t gatts_if, uint16_t conn_id, u
 					uint16_t value_len, uint8_t *value, bool need_confirm)
 {
 	esp_err_t ret = esp_ble_gatts_send_indicate( gatts_if,  conn_id,  attr_handle,  value_len,  value,  need_confirm);
-	if(ret != ESP_OK)
-	{
+	if(ret != ESP_OK){
 		ESP_LOGE(GATT_SERVICE_NAME,"Send indication failed with status %d", ret);
 	}
 	return ret;

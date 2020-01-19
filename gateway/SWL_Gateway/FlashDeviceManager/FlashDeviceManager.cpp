@@ -11,7 +11,6 @@ using namespace SWL_GATEWAY;
 
 FlashDeviceManager::FlashDeviceManager()
 {
-	this->bufferedEvents.currentListIdxUsed = 0u;
 }
 FlashDeviceManager::~FlashDeviceManager()
 {
@@ -30,6 +29,7 @@ bool FlashDeviceManager::RegisterDevice(FlashDevice *device)
 	}
 	this->listOfDevice.push_back(*device);
 	ESP_LOGI(FLASHDEVICEMANAGER, "Added device %d",this->listOfDevice.size());
+	this->registredDevice += 1u;
 	return true;
 
 }
@@ -101,52 +101,6 @@ void FlashDeviceManager::updateField(uint8_t idx, uint16_t field_value, DEVICE_U
 	this->listOfDevice[idx].UpdateField(field_value,field_type);
 }
 
-void FlashDeviceManager::processEvent(EventType type, uint16_t conn_id,uint16_t handle,uint8_t *val, uint32_t len)
-{
-	bool isEventOkay = true;
-	EventInfo recvEvent;
-	if(this->bufferedEvents.listOfEvents[this->bufferedEvents.currentListIdxUsed].size() != 0u)
-	{
-		for(uint8_t i = 0u; i < this->bufferedEvents.listOfEvents[this->bufferedEvents.currentListIdxUsed].size(); i++)
-		{
-			if(type != this->bufferedEvents.listOfEvents[this->bufferedEvents.currentListIdxUsed][i].event_type)
-			{
-				isEventOkay = false;
-				break;
-			}
-		}
-	}
-	if(isEventOkay == false)
-	{
-		ESP_LOGE(FLASHDEVICEMANAGER, "The event type exptected %d, received %d",this->bufferedEvents.listOfEvents[this->bufferedEvents.currentListIdxUsed][0].event_type,
-				type);
-	}
-	else
-	{
-		recvEvent.event_type = type;
-		recvEvent.conn_id = conn_id;
-		recvEvent.handle = handle;
-		recvEvent.val_len = len;
-		if(len < MAX_EVENT_INFO_SIZE && len != 0)
-		{
-			memcpy(recvEvent.val,val,len);
-		}
-		else
-		{
-			ESP_LOGE(FLASHDEVICEMANAGER, "The len of the event is too big %d",len);
-		}
-		if(this->bufferedEvents.listOfEvents[this->bufferedEvents.currentListIdxUsed].size() < MAX_BLE_DEVICES)
-		{
-			this->bufferedEvents.listOfEvents[this->bufferedEvents.currentListIdxUsed].push_back(recvEvent);
-		}
-		else
-		{
-			ESP_LOGE(FLASHDEVICEMANAGER, "Buffers full");
-		}
-	}
-}
-
-
 
 void FlashDeviceManager::NotifyDiscoverComplete(uint16_t conn_id)
 {
@@ -176,13 +130,21 @@ void FlashDeviceManager::RefreshServiceDiscover(uint16_t conn_id)
 void FlashDeviceManager::NotifyReadEvtAttr(uint16_t conn_id,uint16_t handle,uint8_t *value,uint16_t value_len)
 {
 	uint8_t i = 0u;
+	uint8_t usedIdx = 0xFF;
 	for(i = 0; i < this->listOfDevice.size(); i++)
 	{
 		if(this->listOfDevice[i].conn_id == conn_id)
-			// this->bufferedEvents.listOfEvents[this->bufferedEvents.currentListIdxUsed][j].conn_id)
 		{
 			this->listOfDevice[i].NotifyReadAttrEvent(handle,value,value_len);
+			usedIdx = i;
 			break;
+		}
+	}
+	if(usedIdx != 0xFF)
+	{
+		if(this->listOfDevice[usedIdx].get_state_id() == StateId::DELETE)
+		{
+			this->RemoveDevice(this->listOfDevice[usedIdx].bda);
 		}
 	}
 
@@ -192,15 +154,23 @@ void FlashDeviceManager::NotifyReadEvtAttr(uint16_t conn_id,uint16_t handle,uint
 void FlashDeviceManager::NotifyWriteEvtAttr(uint16_t conn_id,uint16_t handle)
 {
 	uint8_t i = 0;
+	uint8_t usedIdx = 0xFF;
 	for(i = 0; i < this->listOfDevice.size(); i++)
 	{
 		if(this->listOfDevice[i].conn_id == conn_id)
 		{
 			this->listOfDevice[i].NotifyWriteAttrEvent(handle);
+			usedIdx = i;
 			break;			
 		}
 	}
-
+	if(usedIdx != 0xFF)
+	{
+		if(this->listOfDevice[usedIdx].get_state_id() == StateId::DELETE)
+		{
+			this->RemoveDevice(this->listOfDevice[usedIdx].bda);
+		}
+	}
 }
 
 void FlashDeviceManager::NotifyDisconnect(esp_bd_addr_t bda)
@@ -232,4 +202,27 @@ void FlashDeviceManager::UpdateState(const etl::imessage& message, esp_bd_addr_t
 			break;
 		}
 	}	
+}
+
+uint8_t FlashDeviceManager::GetNoOfRegistredDevices()
+{
+	return this->registredDevice;
+}
+
+void FlashDeviceManager::ResetInternalInfo()
+{
+	this->registredDevice = 0u;
+}
+
+uint8_t FlashDeviceManager::GetCurrentDevProgress()
+{
+	uint8_t progress =  0u;
+	if(this->listOfDevice.size() != 0)
+	{
+		if(this->listOfDevice[0].flashFileSize != 0)
+		{
+			progress = (uint8_t)((((float)this->listOfDevice[0].currentLenSent)/((float)this->listOfDevice[0].flashFileSize)) * (float)100);
+		}
+	}
+	return progress;
 }

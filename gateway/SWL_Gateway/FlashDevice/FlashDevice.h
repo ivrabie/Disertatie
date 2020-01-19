@@ -84,7 +84,7 @@ typedef enum
 		uint32_t currentLenSent = 0u;
 		uint8_t gattc_if = 0u;
 		GattServiceClient flashService;
-
+		bool no_init = true;
 		// The states.
 		DisconnectedState  disconnectState;
 		ConnectedState     connectState;
@@ -118,6 +118,7 @@ typedef enum
 		void RequestIsDevReady();
 		void RequestBlockStatus();
 		void ValidateFlashing();
+		void Disconect(); 
 		~FlashDevice();
 		
 	};

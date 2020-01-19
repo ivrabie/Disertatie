@@ -35,6 +35,7 @@ FlashDevice::~FlashDevice()
 
 FlashDevice::FlashDevice(const FlashDevice& flashDev):BLE::BleRemoteDevice(flashDev),fsm(flashDev)
 {
+	this->no_init = flashDev.no_init;
 	this->flashService = flashDev.flashService;
 	this->flashProgress = flashDev.flashProgress;
 	this->flashStatus = flashDev.flashStatus;
@@ -47,6 +48,7 @@ FlashDevice::FlashDevice(const FlashDevice& flashDev):BLE::BleRemoteDevice(flash
 
 FlashDevice& FlashDevice::operator=(const FlashDevice &dev)
 {
+	this->no_init = dev.no_init;
 	this->flashService = dev.flashService;
 	this->flashProgress = dev.flashProgress;
 	this->flashStatus = dev.flashStatus;
@@ -312,21 +314,23 @@ void FlashDevice::RefreshGattServiceCache(void)
 }
 
 void FlashDevice::OpenBleConnection()
-{
-	this->InitStateMachine();
-	ESP_LOGE(FLASH_DEVICE, "On connection state %d", this->get_state_id());
-	if(this->get_state_id() == StateId::DISCONNECTED)
+{ 
+	if(this->no_init == true)
 	{
-		
-		this->initFlashService();
-		this->flashService.OpenConnection(this->gattc_if,this->bda,this->ble_addr_type,true);
+		this->no_init = false;
+		this->InitStateMachine();
+		ESP_LOGE(FLASH_DEVICE, "On connection state %d", this->get_state_id());
+		if(this->get_state_id() == StateId::DISCONNECTED)
+		{
+			
+			this->initFlashService();
+			this->flashService.OpenConnection(this->gattc_if,this->bda,this->ble_addr_type,true);
+		}
+		else
+		{
+			ESP_LOGE(FLASH_DEVICE, "Current state %d, already connected", this->get_state_id());
+		}
 	}
-	else
-	{
-		ESP_LOGE(FLASH_DEVICE, "Current state %d, already connected", this->get_state_id());
-	}
-	
-
 }
 
 void FlashDevice::InitStateMachine(void)
@@ -399,7 +403,7 @@ void FlashDevice::SendFileSizeAndVersion()
 		}
 		else
 		{
-			ESP_LOGE(FLASH_DEVICE, "File to flash is not present or empty");
+			ESP_LOGE(FLASH_DEVICE, "File to flash %s is not present or empty",fileName);
 		}
 	}
 }
@@ -474,4 +478,9 @@ void FlashDevice::ValidateFlashing()
 	ESP_GATT_WRITE_TYPE_RSP,
 	ESP_GATT_AUTH_REQ_NONE);
 
+}
+
+void FlashDevice::Disconect()
+{
+	this->flashService.DisconnectService(this->gattc_if, this->conn_id);
 }

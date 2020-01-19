@@ -11,6 +11,7 @@
 #include "../FlashDevice/FlashDevice.h"
 #include <stdint.h>
 #include <esp_bt_defs.h>
+#include "../SwlOled/SwlOled.h"
 namespace SWL_GATEWAY
 {
 
@@ -52,6 +53,7 @@ struct BufferedInfo
 	public:
 			etl::vector<FlashDevice, MAX_BLE_DEVICES> listOfDevice;
 			BufferedInfo bufferedEvents;
+			uint8_t registredDevice = 0;
 			FlashDeviceManager();
 			~FlashDeviceManager();
 			bool RegisterDevice(FlashDevice *flashService);
@@ -65,9 +67,10 @@ struct BufferedInfo
 			void NotifyWriteEvtAttr(uint16_t conn_id,uint16_t handle);
 			void NotifyDisconnect(esp_bd_addr_t bda);
 			void OpenAllConenction();
-
+			uint8_t GetNoOfRegistredDevices();
+			void ResetInternalInfo();
 			void UpdateState(const etl::imessage& message, esp_bd_addr_t bda);
-
+			uint8_t GetCurrentDevProgress();
 	private:
 			void updateField(uint8_t idx, uint16_t field_value, DEVICE_UPDATEFIELD_TYPES field_type);
 			void processEvent(EventType type, uint16_t conn_id,uint16_t handle,uint8_t *val, uint32_t len);

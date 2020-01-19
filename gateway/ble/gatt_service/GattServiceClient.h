@@ -30,6 +30,7 @@ namespace BLE
 		esp_err_t RegisterForNotify(esp_gatt_if_t gattc_if, esp_bd_addr_t server_bda, esp_bt_uuid_t *uuid);
 		GattServiceClient& operator=(const GattServiceClient &gattService);
 		void OpenConnection(esp_gatt_if_t gattc_if, esp_bd_addr_t remote_bda, esp_ble_addr_type_t remote_addr_type, bool is_direct);
+		void DisconnectService(esp_gatt_if_t gattc_if, uint16_t conn_id);
 	};
 }
 

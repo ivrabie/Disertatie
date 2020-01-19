@@ -174,3 +174,8 @@ void GattServiceClient::OpenConnection(esp_gatt_if_t gattc_if, esp_bd_addr_t rem
 		ESP_LOGE(GATT_SERVICECLIENT_NAME, "Connection failed to open service %d", this->serviceInfo.id.uuid.uuid.uuid16);
 	}
 }
+
+void GattServiceClient::DisconnectService(esp_gatt_if_t gattc_if, uint16_t conn_id)
+{
+	this->gattc.Disconnect(gattc_if,conn_id);
+}

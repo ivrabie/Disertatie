@@ -28,18 +28,18 @@ typedef etl::observer<GattcEventInfo> Gattc_Observer;
 class GattClient:public etl::observable<Gattc_Observer, GATTCL_MAX_OBSERVERS>
 {
 
- private:
+private:
 
 
 	
- public:
+public:
 
 	static GattClient gattc;
-	 BleAdapter &bleAdapter = BleAdapter::getInstance();
-	 GattClient();
+	BleAdapter &bleAdapter = BleAdapter::getInstance();
+	GattClient();
 
-	 esp_err_t Init(void);
-	 ~GattClient();
+	esp_err_t Init(void);
+	~GattClient();
 	void RegisterApp(uint16_t appId);
 	esp_err_t SearchService(esp_gatt_if_t gattc_if, uint16_t conn_id);
 	esp_err_t OpenConnection(esp_gatt_if_t gattc_if, esp_bd_addr_t remote_bda, esp_ble_addr_type_t remote_addr_type, bool is_direct);
@@ -66,8 +66,9 @@ class GattClient:public etl::observable<Gattc_Observer, GATTCL_MAX_OBSERVERS>
 	void gattcCallback(GattcEventInfo info);
 	esp_err_t RequestWriteChar(esp_gatt_if_t gattc_if, uint16_t conn_id, uint16_t handle, uint16_t value_len, uint8_t *value, esp_gatt_write_type_t write_type, esp_gatt_auth_req_t auth_req);
 	esp_err_t RequestWriteDesc(esp_gatt_if_t gattc_if, uint16_t conn_id, uint16_t handle, uint16_t value_len, uint8_t *value, esp_gatt_write_type_t write_type, esp_gatt_auth_req_t auth_req);
+	esp_err_t Disconnect(esp_gatt_if_t gattc_if, uint16_t conn_id);
 	static GattClient& getInstance(void);
- };
+};
 
 }
 

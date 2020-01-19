@@ -48,7 +48,7 @@
             "type": "shell",
             "args": [
                 "-p",
-                "COM3",
+                "/dev/ttyUSB0",
                 "flash"
             ],
             "presentation": {

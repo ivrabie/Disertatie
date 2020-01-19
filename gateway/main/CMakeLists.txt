@@ -17,6 +17,12 @@ idf_component_register(SRCS "gateway_main.cpp"
 							"../SWL_Gateway/UpdateFileApp/UpdateFileApp.cpp"
 							"../SWL_Gateway/VersionManager/VersionManager.cpp"
 							"../SWL_Gateway/FlashDevice/FlashStateMachine/FlashStates.cpp"
+							"../Ssd1306/ssd1306.cpp"
+							"../Ssd1306/fonts.c"
+							"../Ssd1306/i2c.cpp"
+							"../Ssd1306/font_tahoma_8pt.c"
+							"../Ssd1306/font_glcd_5x7.c"
+							"../SWL_Gateway/SwlOled/SwlOled.cpp"
 					INCLUDE_DIRS 
 					"../etl"
 					"../wifi/"
@@ -35,6 +41,8 @@ idf_component_register(SRCS "gateway_main.cpp"
 					"../sdcard/"
 					"../SWL_Gateway/UpdateFileApp"
 					"../SWL_Gateway/VersionManager"
+					"../Ssd1306/"
+					"../SWL_Gateway/SwlOled/"
 	
 )
 component_compile_options(-std=c++17)

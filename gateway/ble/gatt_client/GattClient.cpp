@@ -92,6 +92,15 @@ esp_err_t GattClient::SearchService(esp_gatt_if_t gattc_if, uint16_t conn_id)
 	return ret;
 }
 
+esp_err_t GattClient::Disconnect(esp_gatt_if_t gattc_if, uint16_t conn_id)
+{
+	esp_err_t ret = esp_ble_gattc_close(gattc_if, conn_id);
+	if(ret)
+	{
+		ESP_LOGE(GATT_CLIENT_NAME, "%s Search service failed, error code = %x\n", __func__, ret);
+	}
+	return ret;
+}
 
 
 esp_err_t GattClient::OpenConnection(esp_gatt_if_t gattc_if, esp_bd_addr_t remote_bda, esp_ble_addr_type_t remote_addr_type, bool is_direct)
