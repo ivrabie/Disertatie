@@ -1,0 +1,124 @@
+\section{Document structure}
+This document is structured into chapters (\cmdprint{chapter}), sections (\cmdprint{section}), 
+subsections (\cmdprint{subsection}) and sub-subsections (\cmdprint{subsubsection}).
+For example, to make a chapter with the heading Introduction one must write 
+\verb?\chapter{Introduction}?.
+All the chapters, sections and subsections formatted by the \cmdprint{tuiasithesis.sty} file are 
+automatically numbered.
+
+\section{Tables}
+
+The essentials for creating tables can be found in \cite{url:latexTables}.
+Table~\ref{table:tableExample} was created using Listing~\ref{lst:latexTable}.
+\begin{table}
+    \centering
+    \caption{Table example}
+    \label{table:tableExample}
+    \begin{tabular}{l | *{3}{l}}
+       \hline
+        & col 1 & col 1 & col 1 \\
+       \hline
+       row 1 & some data & some data & some data \\
+       row 2 & some data & some data & some data \\
+       row 3 & some data & some data & some data \\
+       row 4 & some data & some data & some data \\
+       \hline
+    \end{tabular}
+\end{table}
+ 
+\begin{lstlisting}[caption={Code for creating a LaTeX table},label={lst:latexTable}]
+\begin{table}
+    \centering
+    \caption{Table example}
+    \label{table:table_example}
+    \begin{tabular}{l | *{3}{l}}
+       \hline
+        & col 1 & col 1 & col 1 \\
+       \hline
+       row 1 & some data & some data & some data \\
+       row 2 & some data & some data & some data \\
+       row 3 & some data & some data & some data \\
+       row 4 & some data & some data & some data \\
+       \hline
+    \end{tabular}
+\end{table}
+\end{lstlisting}
+
+
+\section{Lists}
+
+There are several methods of making lists but the most widely used are simple unordered and ordered lists.
+An unordered list is made using:
+\verb?\begin{itemize}[<marker>] \item ... \end{itemize}?
+and the usual markers are:
+\begin{itemize}
+  \item \cs{textbullet} \textbullet
+  \item \cs{textendash} \textendash
+  \item \cs{textasteriskcentered} \textasteriskcentered
+  \item \cs{textperiodcentered} \textperiodcentered
+\end{itemize}  
+An ordered list is made using:
+\verb?\begin{enumerate}[<style>] \item ... \end{enumerate}?.
+\begin{quotation}
+The
+optional <style> argument can be used to specify the style used to typeset the item counter.
+An occurrence of one of the special characters A, a, I, i or 1 in <style> specifies that the
+counter will be typeset using uppercase letters (A), lowercase letters (a), uppercase Roman
+numerals (I), lowercase Roman numerals (i), or arabic numerals (1).
+\sourceatright{<from the memoir class manual, pg. 135>}
+\end{quotation}
+
+\section{Font styles and sizes}
+
+\begin{table}
+    \centering
+    \caption{Font style commands (two methods)}
+    \label{table:fontstyles}
+    \begin{tabular}{l*{2}{l}}
+       \hline
+       \textup{Upright shape} & \verb?\textup{Upright shape}? & \verb?{\upshape Upright shape}?\\
+       \textit{Italic shape} & \verb?\textit{Italic shape}? & \verb?{\itshape Italic shape}?\\
+       \textsl{Slanted shape} & \verb?\textsl{Slanted shape}? & \verb?{\slshape Slanted shape}?\\
+       \textsc{Small Caps shape} & \verb?\textsc{Small Caps shape}? & \verb?{\scshape Small Caps shape}?\\
+       \textmd{Medium series} & \verb?\textmd{Medium series}? & \verb?{\mdseries Medium series}?\\
+       \textbf{Bold series} & \verb?\textbf{Bold series}? & \verb?{\bfseries Bold series}?\\
+       \textrm{Roman family} & \verb?\textrm{Roman family}? & \verb?{\rmfamily Roman family}?\\
+       \textsf{Sans serif family} & \verb?\textsf{Sans serif family}? & \verb?{\sffamily Sans serif family}?\\
+       \texttt{Typewriter family} & \verb?\texttt{Typewriter family}? & \verb?{\ttfamily Typewriter family}?\\
+       \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}
+    \centering
+    \caption{Font size commands (are relative to the document font size)}
+    \label{table:fontsizes}
+    \begin{tabular}{l*{1}{l}}
+       \hline
+       \miniscule miniscule 7pt & \verb?\miniscule?\\
+       \tiny tiny 8pt & \verb?\tiny?\\
+       \scriptsize scriptsize 9pt & \verb?\scriptsize?\\
+       \footnotesize footnotesize 10pt & \verb?\footnotesize?\\
+       \small small 11pt & \verb?\small?\\
+       \normalsize normalsize 12pt & \verb?\normalsize?\\
+       \large large 14pt & \verb?\large?\\
+       \Large Large 17pt & \verb?\Large?\\
+       \LARGE LARGE 20pt & \verb?\LARGE?\\
+       \huge huge 25pt & \verb?\huge?\\
+       \Huge Huge 30pt & \verb?\Huge?\\
+       \HUGE HUGE 36pt & \verb?\HUGE?\\
+       \hline
+    \end{tabular}
+\end{table}
+
+\section{Bibliography}
+In order to cite a reference the \cmdprint{cite} command must be used.
+For example \verb?\cite{IEEEexample:article_typical}? will produce the following citation
+ \cite{IEEEexample:article_typical}. 
+An example of citing references is something like\ldots in \cite{IEEEexample:bluebookbook} \cite{IEEEexample:conf_typical} \cite{IEEEexample:urlsty}
+the authors present their work.
+!!! Only the references cited in the text will be added to the bibliography at the end of the document.
+
+
+
+\normalsize

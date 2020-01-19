@@ -1,0 +1,42 @@
+\thispagestyle{plain}
+\begin{center}
+\Large\textbf{\xthesistitle}
+\end{center}
+\parskip 0pt 
+\begin{center}
+Dan Cojocaru             
+\end{center}
+\begin{abstract}
+Proiectul de licență presupune realizarea unei aplicații web de tip rețea de socializare ce are ca
+scop crearea unei comunități virtuale. Aplicația numită „GoodCitizen” are rolul de a stimula spiritul 
+civic al utilizatorilor din comunitățile reale/virtuale prin funcționalitățile unice puse la dispoziție. 
+Funcționalitățile permit utilizatorilor să împărtășească evenimente și acțiuni din viața acestora 
+ce au adus un beneficiu comunității. De exemplu participarea la acte de caritate, voluntariat sau orice
+alt tip de binefacere. Aplicația dispune un sistem de premiere a utilizatorilor bazat pe interacțiunile
+în comunitate. 
+
+Aplicația web este o soluție \textit{Single Page Application}.
+Aceasta este un tip de aplicație web care folosește o singură pagină
+HTML, încarcă toate fișierele de tip CSS, JavaScript la primul apel și modifică dinamic
+conținutul acestei pagini în funcție de acțiunile utilizatorului. 
+Aplicația a fost implementată cu soft-cadrul Angular 2, folosind limbajul TypeScript. Acesta 
+este un superset al limbajului JavaScript. În implementarea interfeței aplicației am folosit HTML5 
+și SCSS(extensie CSS).
+
+Datorită utilizării acestor tehnologii, aplicația capătă avantajul portabilității, astfel
+utilizatorul poate accesa funcționalitățile oferite de pe calculatorul personal, sau de
+pe dispozitive mobile, elementele din pagină apărând diferit în funcție de dimensiunile
+ecranului.
+
+Aplicația web consumă servicii de tip REST. Limbajul de programare ales pentru dezvoltarea 
+serviciilor web(REST Web API) este Java. Pentru dezvoltarea aplicației am folosit soft-cadrul
+Spring, versiunea 4. 
+
+Web API-ul a fost implementat după arhitectura \textit{3-straturi}. Arhitectura \textit{3-straturi} 
+presupune gruparea funcționalităților dintr-o aplicație în 
+straturi. Cele 3 straturi sunt : persistență, logică și servicii. Principalele beneficii ale arhitecturii
+pe straturi sunt: abstractizarea, izolarea, mentenabilitatea, performanța, reutilizabilitate și testabilitate.
+
+Pentru stocarea datelor am utilizat o bază de date relațională. Sistemul de gestiune a bazelor de date ales 
+este PostgreSQL, deoarece este unul dintre cele mai populare SGBD-uri open-source în acest moment.
+\end{abstract}

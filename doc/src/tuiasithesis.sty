@@ -1,0 +1,198 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tuiasithesis}[2013/12/22 v1.0 tuiasithesis style file]
+\typeout{2013/12/22 v1.0 tuiasithesis style file} % prints msg on the terminal and in the log file
+
+%% load english an romanian (with proper diacritics)
+\RequirePackage{fontspec}
+\RequirePackage{xunicode}
+\RequirePackage{xltxtra}
+\setmainfont[Ligatures=TeX]{Times New Roman}
+\RequirePackage[english,romanian]{babel}
+\defaultfontfeatures{Ligatures=TeX} %The fontspec package doesn't enable ligatures by default.. leave this here just to be safe
+
+%% set margins
+\setlrmarginsandblock{2cm}{2cm}{*}
+\setulmarginsandblock{2cm}{2cm}{*}
+\checkandfixthelayout
+\setlength{\evensidemargin}{\oddsidemargin}
+
+%% set paragraph indent
+\setlength{\parindent}{1.5cm}
+
+%% set caption font size
+\captionnamefont{\small}
+\captiontitlefont{\small}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% header and footer styles
+\makepagestyle{xpagestyle}% define 'xpagestyle' page style
+  \makeevenhead{xpagestyle}{\xthesisauthorheader}{}{}% even page header
+  %Use \leftmark/\rightmark instead of \thechapter/\thesection. See p. 120 of the memoir manual for details.
+  \makeoddhead{xpagestyle}{}{}{\leftmark}% odd page header
+  \makeevenfoot{xpagestyle}{}{\thepage}{}% even page footer
+  \makeoddfoot{xpagestyle}{}{\thepage}{}% odd page footer
+  
+%% header and footer styles for the title page
+\makepagestyle{xtitlepagestyle}% define 'xpagestyle' page style
+  \makeevenhead{xtitlepagestyle}{}{}{}% even page header
+  \makeoddhead{xtitlepagestyle}{}{}{}% odd page header
+  \makeevenfoot{xtitlepagestyle}{}{}{}% even page footer
+  \makeoddfoot{xtitlepagestyle}{}{}{}% odd page footer
+
+%% header and footer styles
+\makepagestyle{xappendixpagestyle}% define 'xpagestyle' page style
+  \makeevenhead{xappendixpagestyle}{\leftmark}{}{}% even page header
+  %Use \leftmark/\rightmark instead of \thechapter/\thesection. See p. 120 of the memoir manual for details.
+  \makeoddhead{xappendixpagestyle}{}{}{\MakeUppercase{\@chapapp \ \thechapter}}% odd page header
+  \makeevenfoot{xappendixpagestyle}{}{\thepage}{}% even page footer
+  \makeoddfoot{xappendixpagestyle}{}{\thepage}{}% odd page footer
+  \makepsmarks{xappendixpagestyle}{
+  	%\createmark{chapter}{left}{shownumber}{\@chapapp\ }{. \ }
+  	\createmark{chapter}{left}{nonumber}{}{}
+  }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% variable defaults
+\gdef\xthesisuniversity{UNIVERSITATEA TEHNICĂ ``GHEORGHE ASACHI'' DIN IAȘI\\}
+\gdef\xthesisuniversityen{``GHEORGHE ASACHI'' TECHNICAL UNIVERSITY OF IAȘI\\}
+\gdef\xthesisfaculty{Facultatea de Automatică și Calculatoare\\}
+
+\gdef\xthesissdomain{Tehnologia Informației\\}
+
+\gdef\xthesistitle{Titlu}
+\gdef\xthesistitleen{Title}
+\gdef\xthesissubtitle{}
+\gdef\xthesissubtitleen{}
+
+\gdef\xthesisauthor{Nume autor}
+\gdef\xthesisauthoren{Author name}
+\gdef\xthesisauthorheader{Author name}
+\gdef\xthesisadvisor{Nume îndrumător}
+\gdef\xthesisadvisoren{Advisor name}
+
+\gdef\xthesisyear{2017}
+\gdef\xthesiscity{IAȘI}
+
+\gdef\xthesistype{Lucrare de diplomă}
+\gdef\xthesistypeen{Thesis}
+
+%% variables
+\newcommand{\thesisuniversity}[2]{\xdef\xthesisuniversity{#1} \xdef\xthesisuniversityen{#2}}
+\newcommand{\thesisfaculty}[2]{\xdef\xthesisfaculty{#1} \xdef\xthesisfacultyen{#2}}
+\newcommand{\thesistitle}[2]{\xdef\xthesistitle{#1} \xdef\xthesistitleen{#2}}
+\newcommand{\thesissubtitle}[2]{\xdef\xthesissubtitle{#1} \xdef\xthesissubtitleen{#2}}
+
+\newcommand{\thesisauthor}[2]{\xdef\xthesisauthor{#1} \xdef\xthesisauthoren{#2}}
+\newcommand{\thesisauthorheader}[1]{\xdef\xthesisauthorheader{#1}}
+\newcommand{\thesisadvisor}[2]{\xdef\xthesisadvisor{#1} \xdef\xthesisadvisoren{#2}}
+
+\newcommand{\thesisyear}[1]{\xdef\xthesisyear{#1}}
+\newcommand{\thesiscity}[1]{\xdef\xthesiscity{#1}}
+
+\newcommand{\thesistype}[2]{\xdef\xthesistype{#1} \xdef\xthesistypeen{#2}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% color: add support for expressing colour models. Grey can be used
+%% to great effect to emphasize other parts of a graphic or text.
+%% For an excellent set of examples, see Tufte's "Visual Display of
+%% Quantitative Information" or "Envisioning Information".
+%\usepackage{color}
+\usepackage{xcolor}
+\definecolor{greytext}{gray}{0.5}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[bookmarks,bookmarksnumbered,%
+    %citebordercolor={0.8 0.8 0.8},filebordercolor={0.8 0.8 0.8},%
+    %linkbordercolor={0.8 0.8 0.8},urlbordercolor={0.8 0.8 0.8},%
+    allbordercolors={0.8 0.8 0.8},breaklinks,
+    pagebackref,linktocpage%
+    ]{hyperref}
+    
+\renewcommand\backrefpagesname{\(\rightarrow\) pg.}
+\renewcommand\backref{\textcolor{greytext} \backrefpagesname\ }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%   LISTINGS   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Define the listing package
+\usepackage{listings} %code highlighter
+\usepackage{color} %use color
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+ 
+%Customize a bit the look
+\lstset{ %
+backgroundcolor=\color{white}, % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+basicstyle=\footnotesize, % the size of the fonts that are used for the code
+breakatwhitespace=false, % sets if automatic breaks should only happen at whitespace
+breaklines=true, % sets automatic line breaking
+captionpos=b, % sets the caption-position to bottom
+commentstyle=\color{mygreen}, % comment style
+deletekeywords={...}, % if you want to delete keywords from the given language
+escapeinside={\%*}{*)}, % if you want to add LaTeX within your code
+extendedchars=true, % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+frame=single, % adds a frame around the code
+keepspaces=true, % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+keywordstyle=\color{blue}, % keyword style
+% language=Octave, % the language of the code
+morekeywords={*,...}, % if you want to add more keywords to the set
+numbers=left, % where to put the line-numbers; possible values are (none, left, right)
+numbersep=5pt, % how far the line-numbers are from the code
+numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+rulecolor=\color{black}, % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+showspaces=false, % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+showstringspaces=false, % underline spaces within strings only
+showtabs=false, % show tabs within strings adding particular underscores
+stepnumber=1, % the step between two line-numbers. If it's 1, each line will be numbered
+stringstyle=\color{mymauve}, % string literal style
+tabsize=2, % sets default tabsize to 2 spaces
+title=\lstname % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+%END of listing package%
+ 
+\definecolor{darkgray}{rgb}{.4,.4,.4}
+\definecolor{purple}{rgb}{0.65, 0.12, 0.82}
+ 
+%define Javascript language
+\lstdefinelanguage{JavaScript}{
+keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+keywordstyle=\color{blue}\bfseries,
+ndkeywords={class, export, boolean, throw, implements, import, this},
+ndkeywordstyle=\color{darkgray}\bfseries,
+identifierstyle=\color{black},
+sensitive=false,
+comment=[l]{//},
+morecomment=[s]{/*}{*/},
+commentstyle=\color{purple}\ttfamily,
+stringstyle=\color{red}\ttfamily,
+morestring=[b]',
+morestring=[b]"
+}
+ 
+\lstset{
+language=JavaScript,
+extendedchars=true,
+basicstyle=\footnotesize\ttfamily,
+showstringspaces=false,
+showspaces=false,
+numbers=left,
+numberstyle=\footnotesize,
+numbersep=9pt,
+tabsize=2,
+breaklines=true,
+showtabs=false,
+captionpos=b
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% other settings
+\setcounter{tocdepth}{2}% change how deep the table of contents displays
+% automatically
+\setcounter{secnumdepth}{2}% depth of section numberings
+% \abstractintoc% add the abstract to TOC
+
+%%%%?????????????????????????????????????????????????
+\sloppy %from the breakurl package - keeps the text inside the boundaries at the expence of sometimes extra spacing

@@ -1,0 +1,439 @@
+\section{Implementare serviciu în Angular}
+
+Clasa de bază a serviciilor implementate în Angular.
+\begin {lstlisting}
+import { Headers, RequestOptions } from '@angular/http';
+import { Observable } from "rxjs/Rx";
+import { PageFilter } from "./models/index";
+
+export class BaseService {
+    protected serviceUrl: string;
+    protected accessTokenUrl: string;
+    protected headers: Headers;
+    protected options: RequestOptions;
+
+    constructor() {
+        this.serviceUrl = "https://goodcitizen-api.herokuapp.com/";
+        //  this.serviceUrl = "http://localhost:8080/";
+        this.accessTokenUrl = "?access_token=";
+        this.headers = new Headers({ 'Content-Type': 'application/json' });
+        this.options = new RequestOptions({ headers: this.headers });
+    }
+    public handleError(error): Observable<any> {
+        console.log(error);
+        return Observable.throw(error.json());
+    }
+
+    public search(pageFilter: PageFilter): Observable<any>{
+        return null;
+    } 
+
+    public buildQuery(object : any): string {
+        let query: string = "";
+        for (var prop in object) {
+            if (object.hasOwnProperty(prop)) {
+                if(object[prop]){
+                    if(object[prop] instanceof Array){
+                        if(object[prop].length > 0){
+                            query = query.concat('&' + prop + '=' + object[prop].join(','));
+                        }
+                    }else{
+                        query = query.concat('&' + prop + '=' + object[prop]);
+                    }
+                }
+            }
+        }
+        return query;
+    }
+}
+\end{lstlisting}
+Exemplu de cod a implementării unui serviciu în Angular.
+\begin {lstlisting}
+import { Injectable } from "@angular/core";
+import { BaseService } from '../commons/base.service';
+import { Http } from '@angular/http';
+import { Observable, Subject } from 'rxjs/Rx';
+import { AuthService } from '../authentication/index';
+import { 
+    Profile, 
+    CitizenRelation, 
+    CitizenThumbnail,
+    CitizenThumbnailPage } from './models/index';
+import { CitizenFilter } from './filters/index';
+@Injectable()
+export class CitizenService extends BaseService {
+
+    constructor(
+        public http: Http,
+        public authService: AuthService) {
+        super();
+    }
+
+    public findById(id: string): Observable<Profile> {
+        return this.http.get(
+            this.serviceUrl
+            + 'citizen/id/'
+            + this.accessTokenUrl
+            + this.authService.getAcessToken()
+            + '&id=' + id)
+            .map(response => response.json() as Profile)
+            .catch(this.handleError);
+    }
+
+    public update(profile: Profile): Observable<number> {
+        let body = JSON.stringify(profile);
+        return this.http.patch(
+            this.serviceUrl
+            + 'citizen/update/'
+            + this.accessTokenUrl
+            + this.authService.getAcessToken()
+            , body, this.options)
+            .map(response => response.status as number);
+    }
+
+    public followUnfollow(citizenRelation: CitizenRelation): Observable<any> {
+        let body = JSON.stringify(citizenRelation);
+        return this.http.patch(
+            this.serviceUrl
+            + 'citizen-relation/'
+            + this.accessTokenUrl
+            + this.authService.getAcessToken()
+            , body, this.options)
+            .map(response => response.status as number)
+            .catch(this.handleError);
+    }
+
+    public getFollowers(id: string): Observable<CitizenThumbnail[]> {
+        return this.http.get(
+            this.serviceUrl
+            + 'citizen-relation/followers/'
+            + this.accessTokenUrl
+            + this.authService.getAcessToken()
+            + "&id=" + id)
+            .map(citizens => citizens.json() as CitizenThumbnail[])
+            .catch(this.handleError);
+    }
+
+    public getFollowed(id: string): Observable<CitizenThumbnail[]> {
+        return this.http.get(
+            this.serviceUrl
+            + 'citizen-relation/followed/'
+            + this.accessTokenUrl
+            + this.authService.getAcessToken()
+            + "&id=" + id)
+            .map(citizens => citizens.json() as CitizenThumbnail[])
+            .catch(this.handleError);
+    }
+
+    public getCitizenBasicInfo(id: string): Observable<CitizenThumbnail> {
+        return this.http.get(
+            this.serviceUrl
+            + 'citizen/basic-info/'
+            + this.accessTokenUrl
+            + this.authService.getAcessToken()
+            + "&id=" + id)
+            .map(citizens => citizens.json() as CitizenThumbnail)
+            .catch(this.handleError);
+    }
+
+    public getLoggedCitizenPicture(): Observable<string> {
+        return this.http.get(
+            this.serviceUrl
+            + 'citizen/picture/'
+            + this.accessTokenUrl
+            + this.authService.getAcessToken())
+            .map(response => response.json().picture as string)
+            .catch(this.handleError);
+    }
+
+    public checkIfFollows(citizenRelation: CitizenRelation): Observable<boolean> {
+        return this.http.get(
+            this.serviceUrl
+            + 'citizen-relation/check/'
+            + this.accessTokenUrl
+            + this.authService.getAcessToken()
+            + this.buildQuery(citizenRelation))
+            .map(flag => flag.json() as boolean)
+            .catch(this.handleError);
+    }
+
+    public search(citizenFilter: CitizenFilter): Observable<CitizenThumbnailPage> {
+        return this.http
+            .get(
+            this.serviceUrl
+            + 'citizen/'
+            + this.accessTokenUrl
+            + this.authService.getAcessToken()
+            + this.buildQuery(citizenFilter))
+            .map(citizenPage => citizenPage.json() as CitizenThumbnailPage);
+    }
+}
+\end{lstlisting}
+\section{Implementare componentă în Angular}
+\begin {lstlisting}
+import { Component, Input, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { CitizenThumbnail, CitizenRelation } from '../../models/index';
+import { CitizenService } from '../../citizen.service';
+import { AuthService } from "../../../authentication/auth.service";
+import { CommunityService } from "../../../community/index";
+
+@Component({
+    selector: 'citizen-thumbnail',
+    templateUrl: 'citizen-thumbnail.component.html',
+    styleUrls: ['citizen-thumbnail.component.scss']
+})
+export class CitizenThumbnailComponent implements OnInit {
+
+    @Input()
+    public citizen: CitizenThumbnail;
+
+    @Input()
+    public currentCitizenId: string;
+
+    @Input()
+    public showMakeAdminButton: boolean;
+
+    @Input()
+    public communityId: string;
+
+    public picture: string = '';
+    public defaultCitizenPicture: string = '../../assets/default-profile-pic.png';
+    public followButton: string = '';
+    public makeAdminButtonLabel: string = '';
+    public isFollowed: boolean;
+    public isAdmin: boolean;
+
+    constructor(
+        private router: Router,
+        private authService: AuthService,
+        private citizenService: CitizenService,
+        private communityService: CommunityService) {
+    }
+
+    ngOnInit(): void {
+        this.checkIfFollowed();
+        this.checkIfAdmin();
+    }
+
+    public setMakeAdminButton(status: boolean) {
+        this.isAdmin = status;
+        if (!status) {
+            this.makeAdminButtonLabel = "ADD ADMIN";
+        } else {
+            this.makeAdminButtonLabel = "REMOVE ADMIN";
+        }
+    }
+
+    public checkIfAdmin(): void {
+        if (this.showMakeAdminButton) {
+            this.communityService.checkIfRole(
+                this.communityId, this.citizen.id, "ADMIN").subscribe(response => {
+                if (this.citizen.id !== this.currentCitizenId) {
+                    this.setMakeAdminButton(response);
+                }
+            });
+        }
+    }
+
+    public followUnfollow(): void {
+        this.citizenService
+            .followUnfollow(new CitizenRelation(this.currentCitizenId, this.citizen.id))
+            .subscribe(status => this.setFollowButtonStatus(status))
+    }
+
+
+    public setFollowButtonStatus(status: number): void {
+        if (status == 201) {
+            this.isFollowed = true;
+        }else{
+            this.isFollowed = false;
+        }
+        this.setFollowButtonFlag(this.isFollowed);
+    }
+
+    public checkIfFollowed(): void {
+        this.citizenService
+            .checkIfFollows(new CitizenRelation(this.currentCitizenId, this.citizen.id))
+            .subscribe(flag => {
+                this.isFollowed = flag;
+                this.setFollowButtonFlag(flag)
+            });
+    }
+
+    public setFollowButtonFlag(flag: boolean): void {
+        if (flag) {
+            this.followButton = "FOLLOWING";
+        } else {
+            this.followButton = "FOLLOW";
+        }
+    }
+
+    public goToCitizenProfile(): void {
+        let link = ['/citizen/', this.citizen.id];
+        this.router.navigate(link);
+    }
+
+    public addRemoveAdmin() {
+        this.communityService
+            .addRemoveAdmin(this.citizen.id, this.communityId)
+            .subscribe(response => {
+                this.setMakeAdminButton(response);
+            })
+    }
+} 
+\end{lstlisting}
+
+\section{Rutarea în Angular}
+\begin {lstlisting}
+import { ModuleWithProviders } from '@angular/core'
+import { Routes, RouterModule } from '@angular/router'
+
+import {
+    AuthComponent,
+    AnonymousGuard,
+    AuthenticatedGuard,
+    RecoverPasswordComponent
+} from './authentication/index';
+
+import {
+    AchievementSearchComponent,
+    AchievementAddComponent
+} from './achievement/index';
+
+import {
+    CitizenAchievementAddComponent,
+    CitizenAchievementPendingComponent,
+    CitizenAchievementFriendComponent,
+    CitizenAchievementRadiusComponent,
+    CitizenAchievementWonComponent
+} from './citizen-achievement/index';
+
+import {
+    ProfileComponent,
+    ProfileCitizenFollowersComponent,
+    ProfileCitizenFollowedComponent,
+    CitizenSearchComponent
+} from "./citizen/index";
+
+import {
+    CommunityProfileComponent,
+    CommunitySearchComponent,
+    CommunityAddComponent,
+    CitizenProfileCommunityComponent
+} from './community/index';
+import { FeedbackComponent, PageHeaderComponent } from "./commons/index";
+
+const appRoutes: Routes = [
+    {
+        path: '',
+        component: AuthComponent,
+        canActivate: [AuthenticatedGuard]
+    },
+    {
+        path: 'recover-password',
+        component: RecoverPasswordComponent,
+        canActivate: [AuthenticatedGuard]
+    },
+    {
+        path: 'achievement-search',
+        component: AchievementSearchComponent,
+        canActivate: [AnonymousGuard]
+
+    },
+    {
+        path: 'achievement-add/:id',
+        component: AchievementAddComponent,
+        canActivate: [AnonymousGuard],
+        data : {isEditMode : false}
+    },
+    {
+        path: 'achievement-edit/:id',
+        component: AchievementAddComponent,
+        canActivate: [AnonymousGuard],
+        data : {isEditMode : true}
+    },
+    {
+        path: 'citizen-achievement-add/:id',
+        component: CitizenAchievementAddComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'citizen-achievement-pending',
+        component: CitizenAchievementPendingComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'citizen-achievement-won',
+        component: CitizenAchievementWonComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'citizen-achievement-friend',
+        component: CitizenAchievementFriendComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'citizen-achievement-radius',
+        component: CitizenAchievementRadiusComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'citizen/:id',
+        component: ProfileComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'citizen/followers/:id',
+        component: ProfileCitizenFollowersComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'citizen/followed/:id',
+        component: ProfileCitizenFollowedComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'citizen-search',
+        component: CitizenSearchComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'community-profile/:id',
+        component: CommunityProfileComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'community-search',
+        component: CommunitySearchComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'community',
+        component: CommunityAddComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'community/:id',
+        component: CommunityAddComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'citizen-profile-community/:id',
+        component: CitizenProfileCommunityComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'feedback',
+        component: FeedbackComponent,
+        canActivate: [AnonymousGuard]
+    },
+    {
+        path: 'header',
+        component: PageHeaderComponent,
+        canActivate: [AnonymousGuard]
+    }
+];
+
+export const routing: ModuleWithProviders = RouterModule.forRoot(appRoutes);
+\end{lstlisting}

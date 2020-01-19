@@ -1,0 +1,61 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\pagenumbering{Roman}
+
+\begin{center}
+	%{\ \vspace{1.4cm}}
+	\begin{vminipage}{\textwidth}
+    	\centering
+		{\Large \xthesisuniversity}
+    	{\Large \xthesisfaculty}
+		{\Large \xthesissdomain}
+	\end{vminipage}
+  	{\ \vspace{4.1cm}}
+	\begin{vminipage}[t][3.1cm][s]{\textwidth}%
+		\centering
+		\vfill
+		{\HUGE\bfseries\xthesistitle}\\
+		\bigskip
+		{\huge\bfseries\xthesissubtitle}
+		\vfill
+	\end{vminipage}
+	\vspace{1.7cm}
+
+	{\LARGE \xthesistype}
+	\vfill
+
+	\begin{minipage}[t][1.6cm][t]{.95\textwidth}%
+		\begin{flushleft}
+	 		%\leftskip0.5cm
+	 	 	\Large
+	  		Coordonator științific: \\
+	  		\xthesisadvisor \\
+  		\end{flushleft}
+	\end{minipage}
+
+	\vspace{0.5cm}
+
+	\begin{minipage}[t][1.6cm][t]{.95\textwidth}%
+		\Large
+		\begin{tabbing}%
+			\hspace{12cm} \= \hspace{4cm} \kill	
+			\> Absolvent: \\
+			\> \xthesisauthor \\   
+		\end{tabbing}
+	\end{minipage}
+
+	\vspace{2.5cm}
+
+	\begin{minipage}[b]{\textwidth}%
+		\centering
+		  \large
+		\xthesiscity \, \--- \xthesisyear % \,
+	\end{minipage}
+	% \xthesiscity \, \--- \xthesisyear
+
+\end{center}
+
+% we want an empty page right after first titlepage
+\cleardoublepage
+% we're done with the titlepages, proceed with default pagenumbering
+\pagenumbering{roman}

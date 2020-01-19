@@ -1,0 +1,780 @@
+\section{Clase entitate}
+\lstset{language=Java}
+Clasa de bază a entităților
+\begin {lstlisting}
+    @MappedSuperclass
+    public abstract class Base {
+        @Id
+        private UUID id;
+
+        public Base() {
+            id = java.util.UUID.randomUUID();
+        }
+        public UUID getId() {
+            return id;
+        }
+        public void setId(UUID id) {
+            this.id = id;
+        }
+    }
+\end{lstlisting}
+Clasa entitate \textit{Vote}
+\begin {lstlisting}
+    @Entity
+    @Table(name = "VOTE", uniqueConstraints = @UniqueConstraint(columnNames = { "CITIZEN_ID","CITIZEN_ACHIEVEMNT_ID","TYPE"}))
+    public class Vote extends Base {
+        @NotNull
+        private String type;
+        
+        @ManyToOne
+        @JoinColumn(name = "CITIZEN_ACHIEVEMNT_ID", nullable = true)  
+        private CitizenAchievement citizenAchievement;
+        
+        @ManyToOne
+        @JoinColumn(name = "CITIZEN_ID", nullable= true)  
+        private Citizen citizen;
+
+        //...+ setters and getters  
+    }
+\end{lstlisting}
+Clasa entitate \textit{CitizenAchievement}
+\begin {lstlisting}
+    @Entity
+    @Table(name="CITIZEN_ACHIEVEMENT")
+    public class CitizenAchievement extends Base {
+        
+        @ManyToOne
+        @JoinColumn(name = "CITIZEN_ID")
+        @NotNull
+        private Citizen citizen;
+        
+        @ManyToOne
+        @JoinColumn(name = "ACHIEVEMNT_ID")
+        @NotNull
+        private Achievement achievement;
+        
+        @ManyToOne
+        @JoinColumn(name = "COMMUNITY_ID")
+        private Community community;
+        
+        @OneToMany(mappedBy="citizenAchievement")
+        private Set<Vote> votes;
+        
+        @NotNull
+        private Date beginDate;
+        
+        private Date endDate;
+
+        @Column(unique = false, nullable = false)
+        @Size(min = CitizenAchievementConstraints.commentMin, max = CitizenAchievementConstraints.commentMax)
+        private String comment;
+        
+        @NotNull
+        private double longitude ;
+        
+        @NotNull
+        private double latitude;
+        
+        @NotNull
+        private byte[] picture;
+
+        @NotNull
+        private String status;
+
+        //...+ setters and getters
+    }
+\end{lstlisting}
+Clasa entitate \textit{CitizenCommunity}
+\begin {lstlisting}
+    @Entity
+    @Table(name = "CITIZEN_COMMUNITY", uniqueConstraints = @UniqueConstraint(columnNames = { "CITIZEN_ID",
+            "COMMUNITY_ID" }))
+    public class CitizenCommunity extends Base {
+
+        @ManyToOne
+        @JoinColumn(name = "CITIZEN_ID")
+        private Citizen citizen;
+
+        @ManyToOne
+        @JoinColumn(name = "COMMUNITY_ID")
+        private Community community;
+
+        private String role;
+
+        //...+ setters and getters
+    }
+\end{lstlisting}
+Clasa entitate \textit{CitizenRelation}
+\begin {lstlisting}
+    @Entity
+    @Table(name = "CITIZEN_RELATION", uniqueConstraints = @UniqueConstraint(columnNames = { "CITIZEN_ID",
+            "FOLLOWED_CITIZEN_ID" }))
+    public class CitizenRelation extends Base {
+
+        @ManyToOne
+        @JoinColumn(name = "CITIZEN_ID")
+        private Citizen citizen;
+
+        @ManyToOne
+        @JoinColumn(name = "FOLLOWED_CITIZEN_ID")
+        private Citizen followedCitizen;
+
+        private String status;
+
+        //...+ setters and getters
+    }
+\end{lstlisting}
+\section{Liste constrangeri}
+Proprietăți statice cu valorile constrângerilor entității \textit{Citizen}
+\begin{lstlisting}
+    public interface CitizenConstraints {
+        // username
+        int usernameMin = 2;
+        int usernameMax = 15;
+
+        // password
+        int passwordMin = 8;
+        int passwordMax = 50;
+        
+        //firstname
+        int firstnameMin = 2;
+        int firstnameMax = 15;
+    
+        //lastname
+        int lastnameMin = 2;
+        int lastnameMax = 15;
+    }
+\end{lstlisting}
+Proprietăți statice cu valorile constrângerilor entității \textit{Achievement}
+\begin{lstlisting}
+    public interface AchievementConstraints {
+
+        int titleMax = 40;
+        int titleMin = 3;
+        
+        int pointsMax = 1000;
+        int pointsMin = 1;
+        
+        int descriptionMin = 0;
+        int descriptionMax = 255;
+        
+        int numberOfLikesMin = 1;
+        int numberOfLikesMax = 1000;
+        
+    }
+\end{lstlisting}
+\section{Implementări repository}
+Implementarea repository-ului pentru entitatea \textit{Achievement}.
+\begin {lstlisting}
+public interface IAchievementRepository extends CrudRepository<Achievement, UUID> {
+	Optional<Achievement> findByTitle(String title);
+
+	Stream<Achievement> findByDescriptionLike(String description);
+	
+	@Query("SELECT a FROM Achievement a "
+			+ "inner join a.category c"
+			+ " WHERE " 
+			+ " (LOWER(a.title) like CONCAT('%',:title,'%') or LOWER(a.description) like CONCAT('%',:description,'%')) "
+			+ " and c.name in :categories "
+			+ " and a.community.id is null "
+			+ " order by a.title ")
+	Page<Achievement> findByCriteria(
+			@Param("title") String title, 
+			@Param("description") String description,
+			@Param("categories") Set<String> categories,
+			Pageable pageable);
+	
+	@Query("SELECT a FROM Achievement a "
+			+ "inner join a.category c"
+			+ " WHERE " 
+			+ " (LOWER(a.title) like CONCAT('%',:title,'%') or LOWER(a.description) like CONCAT('%',:description,'%')) "
+			+ " and c.name in :categories "
+			+ " and a.community.id = :communityId "
+			+ " order by a.title ")
+	Page<Achievement> findByCriteriaWithCommunity(
+			@Param("title") String title, 
+			@Param("description") String description,
+			@Param("categories") Set<String> categories, 
+			@Param("communityId") UUID communityId,
+			Pageable pageable);
+	
+	@Query("SELECT a FROM Achievement a "
+			+ " inner join a.category c "
+			+ " WHERE " 
+			+ " c.name in :categories "
+			+ " and a.community.id is null " 
+			+ " order by a.title ")
+	Page<Achievement> findByCategories(
+			@Param("categories") Set<String> categories,
+			Pageable pageable);
+	
+	@Query("SELECT a FROM Achievement a "
+			+ " inner join a.category c "
+			+ " WHERE " 
+			+ " c.name in :categories "
+			+ " and a.community.id = :communityId " 
+			+ " order by a.title ")
+	Page<Achievement> findByCategoriesWithCommunity(
+			@Param("categories") Set<String> categories,
+			@Param("communityId") UUID communityId,
+			Pageable pageable);
+}
+\end{lstlisting}
+Implementarea repository-ului pentru entitatea \textit{CitizenAchievement}.
+\begin {lstlisting}
+public interface ICitizenAchievementRepository extends CrudRepository<CitizenAchievement, UUID> {
+
+	int countByStatusAndCitizen(String status, Citizen citizen);
+
+	boolean existsByAchievementAndCitizenAndStatus(Achievement Achievement,Citizen citizen, String status);
+
+	@Query("SELECT ca FROM CitizenAchievement ca "
+			+ " WHERE "
+			+ " ca.citizen.id in :friendsIds"
+			+ " and ca.status = :status")
+	Page<CitizenAchievement> getFriendsAchievements(
+			@Param("friendsIds") Set<UUID> friendsIds,
+			@Param("status") String status,
+			Pageable pageable);
+	
+	
+	@Query("SELECT ca FROM CitizenAchievement ca "
+			+ " inner join ca.achievement a "
+			+ " inner join a.category cat "
+			+ " WHERE "
+			+ " (LOWER(a.title) like CONCAT('%',:title,'%') or LOWER(a.description) like CONCAT('%',:description,'%')) "
+			+ " and cat.name in :categories "
+			+ " and ca.community.id = :communityId "
+			+ " and ca.status = :status")
+	Page<CitizenAchievement> findByCriteria(
+			@Param("title") String title, 
+			@Param("description") String description,
+			@Param("categories") Set<String> categories, 
+			@Param("communityId") UUID communityId,
+			@Param("status") String status,
+			Pageable pageable);
+	
+	@Query("SELECT ca FROM CitizenAchievement ca "
+			+ " WHERE "
+			+ " ca.achievement.category.name in :categories "
+			+ " and ca.community.id = :communityId "
+			+ " and ca.status = :status")
+	Page<CitizenAchievement> findByCategories(
+			@Param("categories") Set<String> categories,
+			@Param("communityId") UUID communityId,
+			@Param("status") String status,
+			Pageable pageable);
+	
+	@Query("SELECT ca FROM CitizenAchievement ca "
+			+ " WHERE "
+			+ " ca.citizen.id = :citizenId "
+			+ " and ca.status = :status ")
+	Page<CitizenAchievement> getCurrentCitizenAchievements(
+			@Param("citizenId") UUID citizenId,
+			@Param("status") String status,
+			Pageable pageable);
+	
+	@Query("SELECT ca FROM CitizenAchievement ca "
+			+ " WHERE "
+			+" (6371*2*atan2("
+			+"	  sqrt( "
+			+"			 (sin(radians(ca.latitude - :latitude)/2 )) "
+			+" 		    *(sin(radians(ca.latitude - :latitude)/2 )) "
+			+" 		    +(sin(radians(ca.longitude - :longitude)/2)) " 
+			+"			*(sin(radians(ca.longitude - :longitude)/2)) "
+			+"			*(cos(radians(ca.latitude))) "
+			+"			*(cos(radians( :latitude ))) "
+			+"		  ),"
+			+"	1-sqrt("
+			+"			 (sin(radians(ca.latitude - :latitude)/2 )) "
+			+"			*(sin(radians(ca.latitude - :latitude)/2 )) "						
+			+"          +(sin(radians(ca.longitude - :longitude)/2)) " 
+			+"			*(sin(radians(ca.longitude - :longitude)/2)) " 
+			+"			*(cos(radians(ca.latitude))) "
+			+"			*(cos(radians( :latitude ))) "
+			+"	      ) "
+			+" )) < :distance"
+			+" and ca.citizen.id != :citizenId"
+			+" and ca.status = :status")
+	Page<CitizenAchievement> findNearBy(
+			@Param("latitude") double latitude, 
+			@Param("longitude") double longitude,
+			@Param("distance") int distance,
+			@Param("citizenId") UUID citizenId,
+			@Param("status") String status,
+			Pageable pageable);
+	@Query("SELECT ca FROM CitizenAchievement ca "
+			+ " WHERE "
+			+ " ca.citizen.id = :citizenId "
+			+ " and ca.status = :status "
+			+ " and ca.endDate > current_date - :numberOfDays")
+	Stream<CitizenAchievement> getCitizenAchievementFromLastDays(
+			@Param("citizenId") UUID citizenId,
+			@Param("status") String status,
+			@Param("numberOfDays") int numberOfDays);
+	
+	Boolean existsByIdAndStatus(
+			@Param("id") UUID id,
+			@Param("status") String status);
+}
+\end{lstlisting}
+\section{Implementări logică}
+Implementare logică -\textit{AchievementService}.
+\begin {lstlisting}
+
+public interface IAchievementService {
+
+    Set<AchievementThumbnailModel> getAll();
+    
+	Page<AchievementThumbnailModel> findByCriteria(String criteria,Set<String> categories,String communityId,int page, int size); 
+	
+	Optional<AchievementThumbnailModel> findById(String id);
+
+	AchievementThumbnailModel save(AchievementThumbnailModel achievementModel);
+	
+}
+
+@Service
+public class AchievementService extends BaseService implements IAchievementService {
+
+    private final IAchievementRepository achievementRepository;
+    
+    private final AchievementMapper achievementMapper;
+    
+    private final ICategoryRepository categoryRepository;
+    
+    private final ICitizenService citizenService;
+    
+    private final ICitizenCommunityService citizenCommunityService;
+
+    public AchievementService(
+    		IAchievementRepository achievementRepository,
+    		ICategoryRepository categoryRepository,
+    		AchievementMapper achievementMapper,
+    		ICitizenService citizenService,
+    		ICitizenCommunityService citizenCommunityService) {
+        this.achievementRepository = achievementRepository;
+        this.achievementMapper = achievementMapper;
+        this.categoryRepository = categoryRepository;
+        this.citizenService = citizenService;
+        this.citizenCommunityService = citizenCommunityService;
+    }
+
+    public Set<AchievementThumbnailModel> getAll() {
+        return StreamSupport.stream((Spliterator<Achievement>)
+                achievementRepository.findAll()
+                .spliterator(), Boolean.FALSE)
+                .map(achievementMapper::toAchievementModel)
+                .collect(toSet());
+    }
+
+	@Override
+	public Page<AchievementThumbnailModel> findByCriteria(
+        String criteria,Set<String> categories,String communityId,int page,int size) {
+		
+		if(categories==null || categories.isEmpty()){
+			categories = StreamSupport.stream(
+					(Spliterator<Category>)categoryRepository.findAll().spliterator(), Boolean.FALSE)
+					.map(Category::getName)
+					.collect(toSet());
+		}
+
+		if(communityId != null){
+	
+			if(criteria == null || criteria.isEmpty()){
+				 return achievementRepository
+						.findByCategoriesWithCommunity(
+                            categories,UUID.fromString(communityId), new PageRequest(page, size))
+						.map(achievementMapper::toAchievementModel);
+			}
+			return achievementRepository
+					.findByCriteriaWithCommunity(
+                        criteria.toLowerCase(),criteria.toLowerCase(),
+                        categories,UUID.fromString(communityId),new PageRequest(page, size))
+					.map(achievementMapper::toAchievementModel);
+		}else{
+			if(criteria == null || criteria.isEmpty()){
+				 return achievementRepository
+						.findByCategories(categories, new PageRequest(page, size))
+						.map(achievementMapper::toAchievementModel);
+			}
+			return achievementRepository
+					.findByCriteria(
+                        criteria.toLowerCase(),criteria.toLowerCase(),categories,new PageRequest(page, size))
+					.map(achievementMapper::toAchievementModel);
+		}
+	}
+
+	@Override
+	public Optional<AchievementThumbnailModel> findById(String id) {
+		 return Optional.of(achievementMapper.toAchievementModel(
+             achievementRepository.findOne(UUID.fromString(id))));
+	}
+
+	@Override
+	public AchievementThumbnailModel save(AchievementThumbnailModel achievementModel) {
+		
+		String currentCitizenId = this.citizenService.getLoggedUserId().toString();	
+		Boolean isAdmin = this.citizenCommunityService.checkIfRole(
+            achievementModel.getCommunityId().toString(), currentCitizenId, GlobalConstants.ADMIN);
+		Boolean isCreator = this.citizenCommunityService.checkIfRole(
+            achievementModel.getCommunityId().toString(), currentCitizenId, GlobalConstants.CREATOR);
+		if( isAdmin || isCreator){
+			if(achievementModel.getId() == null){
+				achievementModel.setId(UUID.randomUUID());
+			}
+			String categoryName = achievementModel.getCategory();
+			if(achievementModel.getCategory() == null){
+				categoryName = GlobalConstants.CATEGORY_DEFAULT;
+			}
+			if(achievementModel.getPoints() <= GoodCitizenGameConstraints.points 
+            || achievementModel.getPoints() >= GoodCitizenGameConstraints.maxPoints){
+				achievementModel.setPoints(GoodCitizenGameConstraints.points);
+			}
+			if(achievementModel.getNumberOfLikes() <= GoodCitizenGameConstraints.numberOfLikes 
+            || achievementModel.getNumberOfLikes() >= GoodCitizenGameConstraints.maxLikes){
+				achievementModel.setNumberOfLikes(GoodCitizenGameConstraints.numberOfLikes);
+			}
+			
+			
+			Optional<Category> category = this.categoryRepository.findByName(categoryName);
+			Achievement achievment = achievementMapper.toAchievement(achievementModel);
+			achievment.setCategory(category.get());
+			
+			return this.achievementMapper.toAchievementModel(
+                this.achievementRepository.save(achievment));
+		}
+		else{
+			throw new UnauthorizedUserException("You are not authorized to add/change this achievment!");
+		}
+	}
+}
+
+\end{lstlisting}
+Implementare logică -\textit{CitizenRelationService}.
+\begin {lstlisting}
+public interface ICitizenRelationService {
+
+	boolean followUnfollow(CitizenRelationFollowModel citizenRelationFollowModel);
+
+	Set<CitizenThumbnailModel> getFollowers(String id);
+	
+	Boolean checkIfExists(String citizenId,String followedId);
+	
+	public Set<CitizenThumbnailModel> getFollowed(String id);
+}
+
+@Service
+public class CitizenRelationService extends BaseService implements ICitizenRelationService {
+
+	private final ICitizenRelationRepository citizenRelationRepository;
+	
+	private final ICitizenService citizenService;
+	
+	private final CitizenMapper citizenMapper;
+	
+	private final CitizenRelationMapper citzenRelationMapper;
+	public CitizenRelationService(
+			ICitizenRelationRepository citizenRelationRepository, 
+			ICitizenService citizenService,
+			CitizenRelationMapper citzenRelationMapper,
+			CitizenMapper citizenMapper){
+		this.citizenRelationRepository = citizenRelationRepository;
+		this.citizenService = citizenService;
+		this.citzenRelationMapper = citzenRelationMapper;
+		this.citizenMapper = citizenMapper;
+	}
+	
+	@Override
+	public boolean followUnfollow(CitizenRelationFollowModel citizenRelationFollowModel) {
+		Optional<CitizenRelation> citizenRelation = 
+            citizenRelationRepository.getByCitizenAndFollowed(
+                citizenService.getLoggedUserId(),
+                citizenRelationFollowModel.getFollowedId());
+		if(citizenRelation.isPresent()){
+			citizenRelationRepository.delete(citizenRelation.get().getId());
+			return false;
+		}else{
+			citizenRelationFollowModel.setId(UUID.randomUUID());
+			citizenRelationRepository
+                .save(citzenRelationMapper
+                .fromCitizenRelationFollow(citizenRelationFollowModel));
+			return true;
+		}
+
+	}
+	
+	public Set<CitizenThumbnailModel> getFollowers(String id){
+		return citizenRelationRepository
+								 .getFollowers(UUID.fromString(id))
+								 .map(CitizenRelation::getCitizen)
+								 .map(citizenMapper::toCitizenThumbnail)
+								 .collect(Collectors.toSet());
+	}
+	
+	public Set<CitizenThumbnailModel> getFollowed(String id){
+		return citizenRelationRepository
+								 .getFollowed(UUID.fromString(id))
+								 .map(CitizenRelation::getFollowedCitizen)
+								 .map(citizenMapper::toCitizenThumbnail)
+								 .collect(Collectors.toSet());
+	}
+	
+	public Boolean checkIfExists(String citizenId,String followedId){
+		Optional<CitizenRelation> citizenRelation = 
+				citizenRelationRepository
+				.getByCitizenAndFollowed(UUID.fromString(citizenId)
+                                        ,UUID.fromString(followedId));
+		if(citizenRelation.isPresent()){
+			return Boolean.TRUE;
+		}
+		return Boolean.FALSE;
+	}
+
+}
+\end{lstlisting}
+\subsection{Cod generat de MapStruct}
+Cod de mapare generat de MapStruct pentru maparea \textit{Achievement}-\textit{AchievementThumbnailModel}  
+\begin {lstlisting}
+@Generated(
+    value = "org.mapstruct.ap.MappingProcessor",
+    date = "2017-06-20T22:00:19+0300",
+    comments = "version: 1.2.0.Beta2, compiler: javac, environment: Java 1.8.0_101 (Oracle Corporation)"
+)
+@Component
+public class AchievementMapperImpl implements AchievementMapper {
+
+    @Override
+    public AchievementThumbnailModel toAchievementModel(Achievement achievement) {
+        if ( achievement == null ) {
+            return null;
+        }
+
+        AchievementThumbnailModel achievementThumbnailModel = new AchievementThumbnailModel();
+
+        String name = achievementCategoryName( achievement );
+        if ( name != null ) {
+            achievementThumbnailModel.setCategory( name );
+        }
+        UUID id = achievementCommunityId( achievement );
+        if ( id != null ) {
+            achievementThumbnailModel.setCommunityId( id );
+        }
+        achievementThumbnailModel.setId( achievement.getId() );
+        byte[] picture = achievement.getPicture();
+        if ( picture != null ) {
+            achievementThumbnailModel.setPicture( Arrays.copyOf( picture, picture.length ) );
+        }
+        achievementThumbnailModel.setTitle( achievement.getTitle() );
+        achievementThumbnailModel.setDescription( achievement.getDescription() );
+        achievementThumbnailModel.setPoints( achievement.getPoints() );
+        achievementThumbnailModel.setNumberOfLikes( achievement.getNumberOfLikes() );
+        return achievementThumbnailModel;
+    }
+
+    @Override
+    public Achievement toAchievement(AchievementThumbnailModel achievement) {
+        if ( achievement == null ) {
+            return null;
+        }
+        Achievement achievement1 = new Achievement();
+        achievement1.setCategory( achievementThumbnailModelToCategory( achievement ) );
+        achievement1.setCommunity( achievementThumbnailModelToCommunity( achievement ) );
+        achievement1.setId( achievement.getId() );
+        achievement1.setNumberOfLikes( achievement.getNumberOfLikes() );
+        achievement1.setTitle( achievement.getTitle() );
+        achievement1.setDescription( achievement.getDescription() );
+        byte[] picture = achievement.getPicture();
+        if ( picture != null ) {
+            achievement1.setPicture( Arrays.copyOf( picture, picture.length ) );
+        }
+        achievement1.setPoints( achievement.getPoints() );
+
+        return achievement1;
+    }
+
+    private String achievementCategoryName(Achievement achievement) {
+        if ( achievement == null ) {
+            return null;
+        }
+        Category category = achievement.getCategory();
+        if ( category == null ) {
+            return null;
+        }
+        String name = category.getName();
+        if ( name == null ) {
+            return null;
+        }
+        return name;
+    }
+
+    private UUID achievementCommunityId(Achievement achievement) {
+        if ( achievement == null ) {
+            return null;
+        }
+        Community community = achievement.getCommunity();
+        if ( community == null ) {
+            return null;
+        }
+        UUID id = community.getId();
+        if ( id == null ) {
+            return null;
+        }
+        return id;
+    }
+
+    protected Category achievementThumbnailModelToCategory(
+        AchievementThumbnailModel achievementThumbnailModel) {
+        if ( achievementThumbnailModel == null ) {
+            return null;
+        }
+
+        Category category = new Category();
+
+        category.setName( achievementThumbnailModel.getCategory() );
+
+        return category;
+    }
+
+    protected Community achievementThumbnailModelToCommunity(
+        AchievementThumbnailModel achievementThumbnailModel) {
+        if ( achievementThumbnailModel == null ) {
+            return null;
+        }
+
+        Community community = new Community();
+
+        community.setId( achievementThumbnailModel.getCommunityId() );
+
+        return community;
+    }
+}
+
+\end{lstlisting}
+\subsection{Controlere REST}
+\begin {lstlisting}
+public abstract class BaseController {
+
+    protected static Message responseMessage = new Message();
+    
+    protected ResponseEntity<?> buildErrorMessage(Errors errors){
+		if (errors.hasErrors()) {
+			return ResponseEntity
+					.badRequest()
+					.body(responseMessage
+							.setMessage(
+							errors.getAllErrors()
+							.stream()
+							.map(ObjectError::getDefaultMessage)
+							.collect(joining(" "))));
+		}
+		return null;
+    }
+}
+
+@RestController
+@RequestMapping(value = "/citizen-relation", produces = { "application/json" })
+public class CitizenRelationController extends BaseController {
+
+	private final ICitizenRelationService citizenRelationService;
+
+	public CitizenRelationController(ICitizenRelationService citizenRelationService) {
+		this.citizenRelationService = citizenRelationService;
+	}
+
+	@PatchMapping
+	public ResponseEntity<?> followUnfollow(
+        @Valid @RequestBody CitizenRelationFollowModel citizenRelationFollowModel, Errors errors) {
+
+		ResponseEntity<?> response = this.buildErrorMessage(errors);
+		if(response == null){
+			if(citizenRelationService.followUnfollow(citizenRelationFollowModel)){
+				return ResponseEntity
+						.status(HttpStatus.CREATED)
+						.body(responseMessage.setMessage("Citizen is followed!"));
+			}
+			return ResponseEntity
+					.status(HttpStatus.NO_CONTENT)
+					.body(responseMessage.setMessage("Unfollowed citizen"));
+			
+		}
+		return response;
+	}
+	
+	@GetMapping(value = "followers/")
+    public Set<CitizenThumbnailModel> getCitizenFollowers(
+    		@RequestParam(value="id", required = true) String id){
+    	return citizenRelationService.getFollowers(id);
+    }
+	
+	@GetMapping(value = "followed/")
+    public Set<CitizenThumbnailModel> getCitizenFollowed(
+    		@RequestParam(value="id", required = true) String id){
+    	return citizenRelationService.getFollowed(id);
+    }
+	
+	@GetMapping(value = "check/")
+    public Boolean checkIfExists(
+    		@RequestParam(value="citizenId", required = true) String citizenId,
+    		@RequestParam(value="followedId", required = true) String followedId){
+    	return citizenRelationService.checkIfExists(citizenId, followedId);
+    }
+}
+
+@RestController
+@RequestMapping(value = "/vote", produces = { "application/json" })
+public class VoteController extends BaseController {
+
+	private final IVoteService voteService;
+	
+	private final IVoteValidator voteValidator;
+
+	public VoteController(
+			IVoteService voteService,
+			IVoteValidator voteValidator) {
+		this.voteService = voteService;
+		this.voteValidator = voteValidator;
+	}
+
+	@PatchMapping
+	public ResponseEntity<?> register(@Valid @RequestBody VoteModel voteModel, Errors errors) {
+
+		voteValidator.validate(voteModel, errors);
+		ResponseEntity<?> response = this.buildErrorMessage(errors);
+		if(response == null){
+			if(voteService.patchVote(voteModel)){
+				return ResponseEntity
+						.status(HttpStatus.CREATED)
+						.body(responseMessage.setMessage("Vote changed!"));
+			}
+			return ResponseEntity
+					.status(HttpStatus.NO_CONTENT)
+					.body(responseMessage.setMessage("Vote deleted"));
+			
+		}
+		return response;
+	}
+	
+@GetMapping(value = "check/")
+public Boolean checkIfExists(
+    		@RequestParam(value="citizenId", required = true) String citizenId,
+    		@RequestParam(value="citizenAchievementId", required = true) String citizenAchievementId,
+    		@RequestParam(value="type", required = true) String type){
+		VoteModel voteModel = new VoteModel();
+		voteModel.setCitizenId(UUID.fromString(citizenId));
+		voteModel.setCitizenAchievementId(UUID.fromString(citizenAchievementId));
+		voteModel.setType(type);
+    	return voteService.checkIfVoteExists(voteModel);
+    }
+	
+	@GetMapping(value = "number-votes/")
+    public int getNumberOfLikes(
+    		@RequestParam(value="citizenAchievementId", required = true) String citizenAchievementId,
+    		@RequestParam(value="type", required = true) String type){
+		VoteModel voteModel = new VoteModel();
+		voteModel.setCitizenAchievementId(UUID.fromString(citizenAchievementId));
+		voteModel.setType(type);
+    	return voteService.getNumberOfVotes(voteModel);
+    }
+}
+\end{lstlisting}

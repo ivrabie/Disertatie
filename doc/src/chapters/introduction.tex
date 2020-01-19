@@ -1,0 +1,39 @@
+
+\section{Document format}
+This document is formatted according to the official specifications: A4 paper
+and the Times New Roman font with a size of 12 pt.
+The upper, lower, left and right margins are of 2 cm, each paragraph starts
+with a 1.5 cm padding, except for the first one, and the row spacing is one
+line.
+Each chapter starts on a new odd page.
+
+All these settings are contained in the tuiasithesis.sty file which formats the
+entire thesis. The \cmdprint{tuiasithesis} package is included using the
+\verb?\usepackage{tuiasithesis}? command.
+
+\section{Defining variables}
+The title page and the header use some variables that can be overriden,
+though it is not really necessary, and some of them must be modified because
+they pertain to the thesis' title, author and advisor.
+Some of the variables have two values, the first one for Romanian and the
+second one for English, while other variables are language independent and have
+only one value.
+% in both romanian and english, where it is the case.
+
+The following variables should not be modified:
+\cmdprint{thesisuniversity}, \cmdprint{thesisfaculty},
+\cmdprint{thesisyear}, \cmdprint{thesiscity} and \cmdprint{thesistype}.
+The first two variables have two values, while the latter three have a single
+value.
+
+There is a single variable with only one value that must be modified, 
+\cmdprint{thesisauthorheader}, which will appear in the document header on the
+even pages. The other variables all have two values and are:
+\cmdprint{thesistitle}, \cmdprint{thesissubtitle} (is optional can be omitted),
+\cmdprint{thesisauthor} and \cmdprint{thesisadvisor}.
+
+If the thesis is written only in Romanian or only in English then the second and
+the first value, respectively, may be left blank.
+Next is an example of setting the thesis title:
+
+\verb?\thesistitle{Model de teza in LaTeX}{Thesis template in LaTeX}?

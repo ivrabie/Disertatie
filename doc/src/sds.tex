@@ -1,0 +1,118 @@
+% %% this document uses the memoir style, A4 paper with the default font size of
+% % 12pt and is setup for two sided printing
+% \documentclass[a4paper,12pt,openany]{memoir}
+% % the tuiasithesis style packacage
+% \usepackage{tuiasithesis}
+% % the package for dummy text
+% \usepackage{graphicx}
+% \graphicspath{ {../images/} }
+% \usepackage{subcaption}
+% \usepackage{wrapfig, framed, caption}
+% \usepackage{listings}
+% \usepackage[ruled,linesnumbered]{algorithm2e}
+% \usepackage{multirow}
+% \usepackage{tabularx} % in the preamble
+% % initialization of the thesis variables such as: author, advisor, title, etc.
+% \thesistitle{Motor de căutare a imaginilor „Peek”}{Motor de căutare a imaginilor „Peek”}
+% \thesisadvisor{Cristian Buțincu}{Cristian Buțincu}
+% \thesisauthor{Lupu Cosmin}{Lupu Cosmin}
+% \thesisauthorheader{Lupu Cosmin}
+
+% % the start of the document
+% \begin{document}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FRONTMATTER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \frontmatter
+% \pagestyle{xtitlepagestyle}% Set page style to 'xtitlepagestyle'
+% % title page - english
+% \selectlanguage{romanian}
+% \input{chapters/titlepage}
+
+% \pagestyle{xpagestyle}% Set page style to 'xpagestyle'
+% % abstract - english
+% \selectlanguage{romanian}
+
+% \setlength{\parskip}{8em}
+% \input{custom_chapters/declaratie}
+% \cleardoublepage
+% % table of contents
+% \tableofcontents
+% \cleardoublepage
+% \cleardoublepage
+
+% \label{ch:abstract}
+% \input{custom_chapters/abstract}
+% \cleardoublepage
+
+% \setlength{\parskip}{0em}
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAINMATTER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \mainmatter
+% \pagestyle{xpagestyle}% Set page style to 'xpagestyle'
+% \selectlanguage{romanian}
+% \pagenumbering{arabic}
+ 
+% %Custom Chapters
+% \chapter{Introducere}
+% \label{ch:introducere}
+% \input{custom_chapters/introducere}
+% \cleardoublepage
+
+% \chapter{Fundamentarea teoretică și documentare}
+% \label{ch:research}
+% \input{custom_chapters/research}
+% \cleardoublepage
+
+% \chapter{Proiectarea aplicației}
+% \label{ch:architecture}
+% \input{custom_chapters/architecture}
+%  \cleardoublepage
+
+% \chapter{Implementarea aplicației}
+% \label{ch:implementation}
+% \input{custom_chapters/implementation}
+% \let\cleardoublepage\clearpage
+
+% \chapter{Testarea aplicației}
+% \label{ch:testing}
+% \input{custom_chapters/testing}
+% \cleardoublepage
+
+% \phantomsection
+% \chapter*{Concluzii}
+% \label{ch:conclusions}
+% \input{custom_chapters/conclusions}
+% \addcontentsline{toc}{chapter}{Concluzii}
+% \cleardoublepage
+
+% \bibliographystyle{IEEEtran}
+% \bibliography{references}
+
+% %end Custom Chapters
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % appendices
+% \appendix
+% \pagestyle{xappendixpagestyle}% Set page style to 'xappendixpagestyle'
+% % \chapter[will appear in TOC][will appear in header]{will appear in heading}
+% \chapter[Testarea aplicației][Testarea aplicației]{Testarea aplicației}
+% \label{ch:appendixImages}
+% \input{custom_chapters/appendixImages}
+
+% \chapter[Codul server-side][Codul server-side]{Codul server-side}
+% \label{ch:appendixBackend}
+% \input{custom_chapters/appendixBackend}
+
+% \chapter[Codul de pe client][Codul de pe client]{Codul de pe client}
+% \label{ch:appendixFrontend}
+% \input{custom_chapters/appendixFrontend}
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BACKMATTER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \backmatter
+
+% \end{document}

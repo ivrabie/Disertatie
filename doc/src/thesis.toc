@@ -1,0 +1,59 @@
+\babel@toc {romanian}{}
+\babel@toc {romanian}{}
+\babel@toc {romanian}{}
+\contentsline {chapter}{Cuprins}{iii}{section*.1}% 
+\babel@toc {romanian}{}
+\contentsline {chapter}{\chapternumberline {1}Introducere}{1}{chapter.1}% 
+\contentsline {chapter}{\chapternumberline {2}Fundamentarea teoretică și documentarea bibliografică pentru tema propusă}{3}{chapter.2}% 
+\contentsline {section}{\numberline {2.1}Concepte}{3}{section.2.1}% 
+\contentsline {subsection}{Single Page Aplication - SPA}{3}{section*.3}% 
+\contentsline {subsection}{RESTful Web Services}{3}{section*.5}% 
+\contentsline {section}{\numberline {2.2}Tehnologii}{3}{section.2.2}% 
+\contentsline {subsection}{PostgreSQL}{3}{section*.7}% 
+\contentsline {subsection}{Java}{3}{section*.8}% 
+\contentsline {subsection}{Spring}{4}{section*.11}% 
+\contentsline {subsubsection}{Spring Boot}{4}{section*.13}% 
+\contentsline {subsubsection}{Spring Data JPA}{4}{section*.15}% 
+\contentsline {subsubsection}{Spring Security - OAuth2}{4}{section*.16}% 
+\contentsline {subsection}{Hibernate}{5}{section*.17}% 
+\contentsline {subsection}{MapStruct}{5}{section*.18}% 
+\contentsline {subsection}{Maven}{5}{section*.19}% 
+\contentsline {subsection}{TypeScript}{5}{section*.20}% 
+\contentsline {subsection}{Node.js}{5}{section*.21}% 
+\contentsline {subsection}{Angular 2}{5}{section*.22}% 
+\contentsline {chapter}{\chapternumberline {3}Proiectarea sistemului}{8}{chapter.3}% 
+\contentsline {section}{\numberline {3.1}Funcțiile rețelei de socializare}{8}{section.3.1}% 
+\contentsline {subsection}{Înregistrarea și autentificarea în aplicație}{9}{section*.24}% 
+\contentsline {subsection}{Resetarea parolei}{9}{section*.26}% 
+\contentsline {subsection}{Ce sunt realizările?}{9}{section*.29}% 
+\contentsline {subsubsection}{Procesul de încercarea unei realizări}{10}{section*.31}% 
+\contentsline {subsubsection}{Vizualizarea realizărilor proprii}{13}{section*.33}% 
+\contentsline {subsubsection}{Procesul de votare a realizărilor în curs de apreciere}{13}{section*.35}% 
+\contentsline {subsection}{Profilul cetățeanului}{14}{section*.38}% 
+\contentsline {subsubsection}{Editarea datelor personale}{15}{section*.40}% 
+\contentsline {subsection}{Stabilirea relațiilor dintre cetățeni}{15}{section*.42}% 
+\contentsline {subsubsection}{Ce sunt comunitățile ?}{16}{section*.44}% 
+\contentsline {subsubsection}{Crearea unei comunități}{18}{section*.49}% 
+\contentsline {subsection}{Extinderea rețelei de socializare}{18}{section*.51}% 
+\contentsline {section}{\numberline {3.2}Diagrame}{18}{section.3.2}% 
+\contentsline {subsection}{Diagrame UML use-case}{18}{section*.53}% 
+\contentsline {subsection}{Diagrama ER a bazei de date}{21}{section*.58}% 
+\contentsline {chapter}{\chapternumberline {4}Implementarea sistemului}{22}{chapter.4}% 
+\contentsline {section}{\numberline {4.1}Implementarea schemei bazei de date}{22}{section.4.1}% 
+\contentsline {section}{\numberline {4.2}Implementarea Web API-ului}{23}{section.4.2}% 
+\contentsline {section}{\numberline {4.3}Arhitectura aplicației web de tip SPA}{26}{section.4.3}% 
+\contentsline {section}{\numberline {4.4}Dificultății/provocări întâmpinate și soluții de rezolvare}{28}{section.4.4}% 
+\contentsline {chapter}{\chapternumberline {5}Testarea aplicaţiei}{29}{chapter.5}% 
+\contentsline {chapter}{Concluzii}{31}{chapter*.64}% 
+\contentsline {chapter}{Bibliografie}{32}{chapter*.65}% 
+\contentsline {appendix}{\chapternumberline {A}Exemple de cod ale împlementării Web API-ului}{33}{appendix.A}% 
+\contentsline {section}{\numberline {A.1}Clase entitate}{33}{section.A.1}% 
+\contentsline {section}{\numberline {A.2}Liste constrangeri}{35}{section.A.2}% 
+\contentsline {section}{\numberline {A.3}Implementări repository}{36}{section.A.3}% 
+\contentsline {section}{\numberline {A.4}Implementări logică}{39}{section.A.4}% 
+\contentsline {subsection}{Cod generat de MapStruct}{42}{section*.66}% 
+\contentsline {subsection}{Controlere REST}{45}{section*.67}% 
+\contentsline {appendix}{\chapternumberline {B}Exemple de cod ale împlementării SPA}{48}{appendix.B}% 
+\contentsline {section}{\numberline {B.1}Implementare serviciu în Angular}{48}{section.B.1}% 
+\contentsline {section}{\numberline {B.2}Implementare componentă în Angular}{51}{section.B.2}% 
+\contentsline {section}{\numberline {B.3}Rutarea în Angular}{53}{section.B.3}% 

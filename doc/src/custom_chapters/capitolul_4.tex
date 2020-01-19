@@ -1,0 +1,406 @@
+Arhitectura rețele de socializare „GoodCitizen” este formată din trei 
+componente: baza de date, Web API și o aplicație web de tipul SPA. 
+
+Am ales folosirea undei baze de date relaționale PostgreSQL deoarece 
+este o platformă open-source. Astfel nu au fost nevoie de costuri financiare
+pentru instalarea aplicației pe \textit{Heroku}. PostgreSQL fiind o opțiune gratis inclusă
+în pachetul oferit de \textit{Heroku}.
+
+Web API-ul este instalat pe \textit{Heroku} și a fost implementat folosind soft-cadrul open-source Spring, pentru limbajul de programare 
+Java versiunea 1.8. Aplicația a rulează pe un web server Tomcat Apache ce este inclus în extensia soft-cadrului 
+Spring numită Spring-Boot. Web API-ul expune servicii de tip REST, ce sunt ulterior consumate de aplicația client.
+
+Aplicația client este reprezentată de o aplicație web de tipul SPA. Aceasta a fost implementată folosind soft-cadrul
+JavaScript numit Angular 4. Aceasta platformă a fost concepută special pentru a depăși obstacolele ce pot apărea 
+în construirea unei aplicații web de tipul SPA. Limbajul utilizat în implementarea aplicației este TypeScript. 
+Aplicația rulează 
+pe un server Node.js și este instalată pe Google Firebase.
+
+\begin{figure}[h]
+\includegraphics[height=0.59\linewidth]{cloud.png}
+\centering
+\caption{Arhitectura rețelei de socializare „GoodCitizen”}
+\label{fig:cloud}
+\end{figure}    
+
+\section{Implementarea schemei bazei de date}
+    Schema bazei de date este generată cu soft-cadrul Hibernate.Hibernate este o unealtă de maparea a obiectelor de 
+domeniu la entitățile dintr-o bază de date relațională. O altă caracteristică specifică este generarea schemei bazei de date 
+după clasele entitate. Datorită acestei caracteristici, baza de date a aplicației se poate schimba ușor. De exemplu 
+se poate folosi Oracle Database, MySQL Database sau alt tip de baze de date relaționale, modificând doar 
+fișierul de proprietăți al aplicației. 
+
+	Exemplul de mai jos reprezintă o clasă entitate. Adnotare \textit{@Entity} declară clasa \textit{Achievment} ca entitate.
+Pentru a adăuga constrângeri pe coloanele tabelei se folosesc adnotările \textit{@Id, @Column, @Size, @Min, @Max, @Email și @NotNull}; 
+iar pentru legăturile intre relații se folosesc adnotările \textit{@OneToMany, @ManyToMany, @ManyToOne și @JoinColumn}. Pentru 
+mai multe exemple vezi Anexa \ref{ch:anexa_capitolul_4_A}.
+\lstset{language=Java}
+\begin {lstlisting}
+@Entity
+public class Achievement extends Base {
+
+	@Column(unique = false, nullable = false)
+	@Size(min = AchievementConstraints.titleMin, max = AchievementConstraints.titleMax)
+	private String title;
+
+	@Column(unique = false, nullable = false)
+	@Size(min = AchievementConstraints.descriptionMin, max = AchievementConstraints.descriptionMax)
+	private String description;
+
+	private byte[] picture;
+
+	@ManyToOne
+	@JoinColumn(name = "COMMUNITY_ID")
+	private Community community;
+
+	@ManyToOne
+	@JoinColumn(name = "CATEGORY_ID")
+	private Category category;
+
+	@OneToMany(mappedBy = "achievement")
+	private Set<CitizenAchievement> citizenAchievements;
+	
+	@Column(unique = false, nullable = false)
+	@Min(AchievementConstraints.numberOfLikesMin)
+	@Max(AchievementConstraints.numberOfLikesMax)
+	private int numberOfLikes;
+	
+	//... + getters and setters 
+}
+\end{lstlisting}
+
+\section{Implementarea Web API-ului}
+Web API-ul a fost implementat după arhitectura \textit{3-straturi}. Arhitectura \textit{3-straturi} 
+presupune gruparea funcționalităților dintr-o aplicație în 
+straturi distincte ce sunt așezate vertical unul peste altul.
+Componentele din fiecare strat comunică prin interfețe bine definite.
+Comunicarea dintre straturi este foarte decuplată. Un strat poate 
+comunica doar cu componentele din interiorul acestuia sau cu 
+componente din stratul de dedesubt. Cele 3 straturi sunt : persistență, logică și servicii.
+
+Principalele beneficii ale arhitecturii pe straturi sunt: abstractizarea, izolarea, 
+mentenabilitatea, performanța, reutilizabilitate și testabilitate.
+
+\begin{figure}[h]
+\includegraphics[height=0.3\linewidth]{layer.png}
+\centering
+\caption{Arhitectura Web API-ului}
+\label{fig:layer}
+\end{figure}    
+
+\textbf{Stratul de persistentă} oferă un acces simplificat la datele prezente
+în baza de date. Acesta face legătura dintre stratul-ul de logica si sistemul de gestionare a bazei de
+date(SGBD). Sunt folosite Hibernate 5 și Spring Data JPA. Spring Data JPA oferă o soluție ce ușurează 
+implementarea șablonului repository. Se realizează extinzând interfața \textit{CrudRepository} asa cum 
+este prezentat în exemplul de mai jos.
+
+\begin {lstlisting}
+public interface ICommunityRepository extends CrudRepository<Community, UUID> {
+
+	@Query("SELECT c FROM Community c "
+			+ " WHERE " 
+			+ "(LOWER(c.title) like CONCAT('%',:title,'%') or LOWER(c.description) like CONCAT('%',:description,'%')) "
+			+ "order by c.title ")
+	Page<Community> findByCriteria(
+			@Param("title") String title, 
+			@Param("description") String description,
+			Pageable pageable);
+	
+	@Query("SELECT c FROM Community c order by c.title asc")
+	Page<Community> findAllPageable(Pageable pageable);
+}
+\end{lstlisting}
+
+\textbf{Stratul de logică} cuprinde: logica aplicației, regulile de validare și maparea de obiecte.
+Am folosit șablonul injectare de dependințe pentru decuplarea claselor de dependințele
+acestora (o dependintă este un obiect ce poate fi folosit; injectarea reprezinta procesul de pasare a
+unui obiect la un strat/client). Astfel încât aceste dependințe să se poată înlocui fără a modifica
+alte clase. Acest pattern este folosit pentru decuplarea modulelor, astfel încât sa poate fi
+dezvoltate,testate și versionate independent. Injectarea dependințelor a fost realizata cu soft-cadrul
+Spring. Mai jos este prezentat un serviciu de logică pentru clasa \textit{Community}.
+Adnotarea \textit{@Service} marchează clasa \textit{CommunityService} ca \textit{bean} 
+astfel încât mecanismul se scanare al componentelor să o poată extrage \textit{bean}-ul din contextul aplicației.
+În mod implicit adnotarea \textit{@Service} declară \textit{bean}-ul ca fiind singleton. Astfel este
+creată o singură instanța a clasei \textit{CommunityService} Injectarea este realizată prin constructorul clasei. Pentru mai multe exemple vezi 
+Anexa \ref{ch:anexa_capitolul_4_A}.
+\begin {lstlisting}
+
+@Transactional
+public abstract class BaseService {
+
+}
+
+public interface ICommunityService {
+	Page<CommunityThumbnailModel> findByCriteria(String term, int page, int size);
+
+	//...
+}
+
+@Service
+public class CommunityService extends BaseService implements ICommunityService {
+
+	private final ICommunityRepository communityRepository;
+	 
+    private final CommunityMapper communityMapper;
+    
+    private final ICitizenService citizenService;
+    
+    private final ICitizenCommunityRepository citizenCommunityRepository;
+
+    public CommunityService(
+    		ICommunityRepository communityRepository,
+    		IAuthenticationFacade authenticationFacade,
+    		CommunityMapper communityMapper,
+    		ICitizenService citizenService,
+    		ICitizenCommunityRepository citizenCommunityRepository) {
+        this.communityRepository = communityRepository;
+        this.communityMapper = communityMapper;
+        this.citizenService = citizenService;
+        this.citizenCommunityRepository = citizenCommunityRepository;
+    }
+    
+	@Override
+	public Page<CommunityThumbnailModel> findByCriteria(String term, int page, int size) {
+		if(!term.isEmpty()){
+			term = term.toLowerCase();
+			return communityRepository.findByCriteria(term, term,new PageRequest(page, size))
+					.map(communityMapper::toCommunityThumbnail);
+		}else{
+			return communityRepository.findAllPageable(new PageRequest(page, size))
+					.map(communityMapper::toCommunityThumbnail);
+		}
+	}
+	
+	//...
+}
+\end{lstlisting}
+	Mapările între obiectele din diferite domenii sunt necesare deoarece există cazuri în care 
+nu este necesară expunerea tuturor proprietăților sau anumite date trebuiesc mapate pe alte 
+proprietăți cu nume diferite.
+
+Pentru maparea între obiecte (Entități – DTO-uri) am folosit generatorul de cod MapStruct.
+Mai jos este prezentată o mapare folosind MapStruct. Pentru a vizualiza codul generat vezi 
+Anexa \ref{ch:anexa_capitolul_4_A}.
+\begin {lstlisting}
+@Mapper(componentModel = "spring")
+public interface AchievementMapper {
+
+	@Mappings({
+	@Mapping(source = "achievement.category.name", target="category"),
+	@Mapping(source = "achievement.community.id", target="communityId")})
+    AchievementThumbnailModel toAchievementModel(Achievement achievement);
+
+	@Mappings({
+		@Mapping(target = "achievement.category.name", source="category"),
+		@Mapping(target = "achievement.community.id", source="communityId")})
+	Achievement toAchievement(AchievementThumbnailModel achievement);
+
+}
+
+\end{lstlisting}
+
+\textbf{Stratul de servicii} este cel care expune servicii REST( JAX-RS ).
+Serverul de servicii REST (Web API-ul) rulează pe un server Tomcat incorporat în Spring
+Boot. Autentificarea se realizează pe bază de token și este implementată cu soft-cadrul Spring
+Security prin protocolul OAuth 2.0. În figura de mai jos este prezentată autentificarea pe bază de token.
+
+\begin{figure}[h]
+\includegraphics[height=0.48\linewidth]{oauth.png}
+\centering
+\caption{Autentificare pe bază de token\cite{OAuth2}}
+\label{fig:oauth}
+\end{figure}    
+
+În Spring pentru a construii servicii REST, cererile HTTP sunt controlate de controler. 
+Aceste componente sunt identificate prin adnotarea \textit{@RestController}.
+Prin adnotarea controller-ului cu \textit{@RestController}, adnotarea \textit{@ResponseBody} este activă în mod 
+implicit. \textit{@ResponseEntity} are scopul de a reprezenta întregul răspuns HTTP. Se poate controla 
+componența răspunsului: codul de stare, antetul și corpul. Mai jos este prezentat un exemplu de controller. 
+Pentru mai multe exemple vezi Anexa \ref{ch:anexa_capitolul_4_A}.
+
+\begin {lstlisting}
+
+@RestController
+@RequestMapping(value = "/email", produces = { "application/json" })
+public class EmailController extends BaseController {
+
+	private final IResetPasswordService resetPasswordService;
+		
+	private final IFeedBackService feedbackService;
+	
+	public EmailController(
+			IResetPasswordService resetPasswordService,
+			IFeedBackService feedbackService) {
+		this.resetPasswordService = resetPasswordService;
+		this.feedbackService = feedbackService;
+	}
+	
+	@PatchMapping(value = "/reset-password")
+    public ResponseEntity<?> resetPassword(
+    		@Valid @RequestBody @Email String email,Errors errors){
+		
+		ResponseEntity<?> response = this.buildErrorMessage(errors);
+		if(response == null){
+    		return ResponseEntity
+					.status(HttpStatus.OK)
+					.body(resetPasswordService.resetPassword(email));
+		}
+		
+		return response;
+	}
+	
+	@PostMapping(value = "/feedback")
+	public void sendFeedBack(@RequestBody FeedbackModel feedbackModel){
+		this.feedbackService.sendFeedBack(feedbackModel);
+	}	
+}
+
+\end{lstlisting}
+
+\section{Arhitectura aplicației web de tip SPA}
+
+Pentru implementarea aplicației web de tipul SPA am folosit soft-cadrul AngularJs.
+Angular este un soft-cadru pentru construirea aplicațiilor în TypeScript sau orice alt 
+limbaj ce este compilat în JavaScript.
+Acest soft-cadru conține biblioteci, unele aparțin de nucleul soft-cadrului și altele sunt
+opționale. 
+
+	Bibliotecile opționale de Angular folosite sunt: \textit{Angular Material 2, ng2-charts, ng2-validation} și \textit{angular2-google-maps}.
+Biblioteca \textit{ng2-charts} este folosită pentru afișarea statisticilor de pe pagina de profil a utilizatorului. 
+Angular Material 2 este folosită pentru designul componentelor. Pachetul \textit{Angular 2 Google Maps} este utilizat pentru schimbarea locației la încercarea 
+unei realizări.Aceasta accesează un web API extern. 
+
+	Se pot construi: template-uri HTML cu un stil de marcare ce este specific Angular,
+clase componente ce folosesc template-uri,servicii ce sunt injectate în componente și 
+module ce grupează componente și servicii.
+
+	Pentru stilizarea aplicației am folosit SCSS.
+Acesta este un pre-processor cu sintaxă avansată. Fișierele de SCSS sunt procesate de și transformate în CSS obișnuit.
+
+	Injectarea dependințelor este un șablon de programare important. Angular are propriul soft-cadru de injectare
+a dependințelor. Fără injectarea dependințelor nu s-ar putea crea aplicații în Angular deoarece este mereu necesar.
+
+	Aplicația se lansează prin inițializarea modulului rădăcină. Apoi platforma Angular
+se ocupa de prezentarea conținutului aplicației în browser și de interacțiunile utilizatorului,
+în funcție de logica scrisă de programator.
+
+	Rețeaua de socializare „GoodCitizen” conține un singur modul deoarece este o aplicație de
+dimensiune mică. \textit{@NgModule} este o funcție decorator ce primește parametru un singur 
+obiect metadata ale cărui proprietăți descriu modulul. Cele mai importante declarații sunt :
+\textit{declarations}(clasele view ce aparțin de modul),\textit{exports}(este un subset de 
+declarări ce ar trebui sa fie vizibile și utilizabile în alte module sau componente),
+\textit{imports}(alte module ale căror clase sunt necesare în componente),\textit{providers}
+(serviciile cu care modulul contribuie la lista globală de servicii) și \textit{boostrap}
+(view-ul principal al aplicației, apelat de componenta rădăcină, ce deține toate view-urile 
+aplicației).  
+
+Mai jos este prezentat modulul aplicației. Pentru mai multe exemple de implementări vezi Anexa \ref{ch:anexa_capitolul_4_B}.
+\begin {lstlisting}[language=JavaScript]
+	@NgModule({
+  providers: [
+
+    AuthService,
+    AnonymousGuard,
+    AuthenticatedGuard,
+    AchievementService,
+    CategoryService,
+    CitizenService,
+    CitizenAchievementService,
+    CommunityService,
+    FeedbackService],
+
+  declarations: [
+    AppComponent,
+    NavigationComponent,
+    PageHeaderComponent,
+    AlertDialogComponent,
+    ConfirmDialogComponent,
+	//...more components
+  ],
+
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    FormsModule,
+    ReactiveFormsModule,
+    ChartsModule,
+
+    HttpModule,
+    routing,
+    NgbModule.forRoot(),
+    MaterialModule.forRoot(),
+    AgmCoreModule.forRoot({
+      apiKey: 'AIzaSyBZDeaviSbBrrg9gdLQeZYbsnhD15RvMZQ',
+      libraries: ["places"]
+    })
+  ],
+  entryComponents: [
+    AlertDialogComponent,
+    ConfirmDialogComponent
+  ],
+
+  bootstrap: [AppComponent]
+})
+export class AppModule {
+}
+\end{lstlisting}
+
+Exemplu de template HTML cu limbaj de marcare specific Angular:
+\begin {lstlisting}
+<div  class="card-container">
+		<div class="title-ach">
+			<b>{{citizenAchievement.achievementTitle}}</b>
+        </div>
+        <md-card>
+            <md-card-content>
+                <div class="image-container">
+                    <img [src]="!citizenAchievement.achievementPicture ? 
+                                defaultAchievementPicture :
+                                'data:image/png;base64,' + citizenAchievement.achievementPicture">
+                </div>
+                <div class="image-container">
+                    <img [src]="'data:image/png;base64,'+ citizenAchievement.picture">
+                </div>
+            </md-card-content>
+        </md-card>
+</div>
+\end{lstlisting}
+
+Exemplu cod SCSS:
+\begin {lstlisting}
+#citizenPage{
+    padding-bottom: 40px;
+    .citizen-filter-container{
+        flex-wrap: nowrap  wrap  wrap-reverse;
+        justify-content: space-between;
+        padding-left: 20px;
+        padding-right: 20px;
+
+        .mat-input-container{
+            padding:10px;
+            input{
+                width: 240px;
+            }
+        }
+		//...
+     
+    }
+}
+\end{lstlisting}
+
+\section{Dificultății/provocări întâmpinate și soluții de rezolvare}
+Instalarea în cloud a aplicațiilor a reprezentat o dificultate deoarece configurările făcute local
+nu erau valide și pentru o instalare pe cloud. A trebuit sa restructurez și sa reconfigurez proiectele.
+Totodată a trebuit sa schimb baza de date Oracle cu PotgreSQL deoarece nu există servicii gratis oferite de 
+Oracle.
+
+Dificultăți la configurarea generatorului de cod MapStruct deoarece mapările nu erau
+generate când proiectul era compilat cu Maven. Problema a fost plugin-ul pentru Eclipse care nu
+funcționa conform specificațiilor. Acesta nu ștergea fișierele vechi de mapare înainte de a le genera
+pe cele noi, astfel apărea o eroare de generare a mapărilor ce indica greșit problema. Am rezolvat
+problema ștergând fișierele vechi de mapare cu un plugin maven (\textit{maven-clean-plugin}).
+
+Probleme de compatibilitate dintre browsere a reprezentat una dintre cele mai mari dificultăți.
+Browser-ele interpretează codul HTML și CSS într-un mod diferit. Am reușit să trec de aceste dificultăți 
+căutând pe internet soluții de remediere a problemelor.
+

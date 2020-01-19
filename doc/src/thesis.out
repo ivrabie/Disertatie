@@ -1,0 +1,46 @@
+\BOOKMARK [0][-]{section*.1}{Cuprins}{}% 1
+\BOOKMARK [0][-]{chapter.1}{1\040Introducere}{}% 2
+\BOOKMARK [0][-]{chapter.2}{2 Fundamentarea teoretică și documentarea bibliografică pentru tema propusă}{}% 3
+\BOOKMARK [1][-]{section.2.1}{2.1\040Concepte}{chapter.2}% 4
+\BOOKMARK [2][-]{section*.3}{Single\040Page\040Aplication\040-\040SPA}{section.2.1}% 5
+\BOOKMARK [2][-]{section*.5}{RESTful\040Web\040Services}{section.2.1}% 6
+\BOOKMARK [1][-]{section.2.2}{2.2\040Tehnologii}{chapter.2}% 7
+\BOOKMARK [2][-]{section*.7}{PostgreSQL}{section.2.2}% 8
+\BOOKMARK [2][-]{section*.8}{Java}{section.2.2}% 9
+\BOOKMARK [2][-]{section*.11}{Spring}{section.2.2}% 10
+\BOOKMARK [2][-]{section*.17}{Hibernate}{section.2.2}% 11
+\BOOKMARK [2][-]{section*.18}{MapStruct}{section.2.2}% 12
+\BOOKMARK [2][-]{section*.19}{Maven}{section.2.2}% 13
+\BOOKMARK [2][-]{section*.20}{TypeScript}{section.2.2}% 14
+\BOOKMARK [2][-]{section*.21}{Node.js}{section.2.2}% 15
+\BOOKMARK [2][-]{section*.22}{Angular\0402}{section.2.2}% 16
+\BOOKMARK [0][-]{chapter.3}{3\040Proiectarea\040sistemului}{}% 17
+\BOOKMARK [1][-]{section.3.1}{3.1 Funcțiile rețelei de socializare}{chapter.3}% 18
+\BOOKMARK [2][-]{section*.24}{Înregistrarea și autentificarea în aplicație}{section.3.1}% 19
+\BOOKMARK [2][-]{section*.26}{Resetarea\040parolei}{section.3.1}% 20
+\BOOKMARK [2][-]{section*.29}{Ce sunt realizările?}{section.3.1}% 21
+\BOOKMARK [2][-]{section*.38}{Profilul cetățeanului}{section.3.1}% 22
+\BOOKMARK [2][-]{section*.42}{Stabilirea relațiilor dintre cetățeni}{section.3.1}% 23
+\BOOKMARK [2][-]{section*.51}{Extinderea rețelei de socializare}{section.3.1}% 24
+\BOOKMARK [1][-]{section.3.2}{3.2\040Diagrame}{chapter.3}% 25
+\BOOKMARK [2][-]{section*.53}{Diagrame\040UML\040use-case}{section.3.2}% 26
+\BOOKMARK [2][-]{section*.58}{Diagrama\040ER\040a\040bazei\040de\040date}{section.3.2}% 27
+\BOOKMARK [0][-]{chapter.4}{4\040Implementarea\040sistemului}{}% 28
+\BOOKMARK [1][-]{section.4.1}{4.1\040Implementarea\040schemei\040bazei\040de\040date}{chapter.4}% 29
+\BOOKMARK [1][-]{section.4.2}{4.2\040Implementarea\040Web\040API-ului}{chapter.4}% 30
+\BOOKMARK [1][-]{section.4.3}{4.3 Arhitectura aplicației web de tip SPA}{chapter.4}% 31
+\BOOKMARK [1][-]{section.4.4}{4.4 Dificultății/provocări întâmpinate și soluții de rezolvare}{chapter.4}% 32
+\BOOKMARK [0][-]{chapter.5}{5 Testarea aplicaţiei}{}% 33
+\BOOKMARK [0][-]{chapter*.64}{Concluzii}{}% 34
+\BOOKMARK [0][-]{chapter*.65}{Bibliografie}{}% 35
+\BOOKMARK [0][-]{appendix.A}{A Exemple de cod ale împlementării Web API-ului}{}% 36
+\BOOKMARK [1][-]{section.A.1}{A.1\040Clase\040entitate}{appendix.A}% 37
+\BOOKMARK [1][-]{section.A.2}{A.2\040Liste\040constrangeri}{appendix.A}% 38
+\BOOKMARK [1][-]{section.A.3}{A.3 Implementări repository}{appendix.A}% 39
+\BOOKMARK [1][-]{section.A.4}{A.4 Implementări logică}{appendix.A}% 40
+\BOOKMARK [2][-]{section*.66}{Cod\040generat\040de\040MapStruct}{section.A.4}% 41
+\BOOKMARK [2][-]{section*.67}{Controlere\040REST}{section.A.4}% 42
+\BOOKMARK [0][-]{appendix.B}{B Exemple de cod ale împlementării SPA}{}% 43
+\BOOKMARK [1][-]{section.B.1}{B.1 Implementare serviciu în Angular}{appendix.B}% 44
+\BOOKMARK [1][-]{section.B.2}{B.2 Implementare componentă în Angular}{appendix.B}% 45
+\BOOKMARK [1][-]{section.B.3}{B.3 Rutarea în Angular}{appendix.B}% 46
